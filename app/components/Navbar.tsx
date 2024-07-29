@@ -11,7 +11,7 @@ const WalletMultiButtonDynamic = dynamic(
 );
 
 const Navbar = () => {
-  const { connected, disconnect } = useWallet();
+  const { connected } = useWallet();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -26,16 +26,7 @@ const Navbar = () => {
     <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
       <div className="text-xl font-bold">Pot Luck Fun</div>
       <div>
-        {connected ? (
-          <button
-            onClick={disconnect}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-          >
-            Disconnect
-          </button>
-        ) : (
-          <WalletMultiButtonDynamic className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" />
-        )}
+        <WalletMultiButtonDynamic className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" />
       </div>
     </nav>
   );
