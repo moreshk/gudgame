@@ -1,12 +1,10 @@
 'use client';
-
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-// import { LAMPORTS_PER_SOL, PublicKey, Transaction as web3Transaction } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
-import { createRecord } from './server/createRecord';
+import { createGame } from './server/createGame';
 import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-
+import GameCreationForm from './components/GameCreationForm';
 
 export default function Home() {
   const { publicKey } = useWallet();
@@ -35,7 +33,7 @@ export default function Home() {
     return () => clearInterval(intervalId);
   }, [publicKey, connection]);
 
-  const handleCreate = async () => {
+  const handleCreate = async (maxPossibilities: number, initialThreshold: number, maxRounds: number) => {
     if (!publicKey || !connection) return;
   
     setIsCreating(true);
@@ -60,15 +58,22 @@ export default function Home() {
         lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
       });
   
-      const result = await createRecord(publicKey.toString(), signature);
+      const result = await createGame(
+        maxPossibilities,
+        initialThreshold,
+        maxRounds,
+        publicKey.toString(),
+        signature
+      );
+
       if (result.success) {
-        alert(`Record created with ID: ${result.id}`);
+        alert(`Game created with ID: ${result.id}`);
       } else {
         throw new Error(result.error);
       }
     } catch (error) {
-      console.error('Error creating record:', error);
-      alert('Failed to create record');
+      console.error('Error creating game:', error);
+      alert('Failed to create game');
     } finally {
       setIsCreating(false);
     }
@@ -77,29 +82,23 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow flex flex-col items-center justify-center">
+      <main className="flex-grow flex flex-col items-center justify-center p-4">
         {publicKey ? (
-          <>
-            <h1 className="text-3xl font-bold mb-4">
+          <div className="w-full max-w-md">
+            <h1 className="text-3xl font-bold mb-4 text-center">
               Welcome {publicKey.toString().slice(0, 4)}...{publicKey.toString().slice(-4)}
             </h1>
             {balance !== null ? (
-              <p className="text-xl mb-4">
+              <p className="text-xl mb-6 text-center">
                 Your balance: {balance.toFixed(4)} SOL
               </p>
             ) : (
-              <p className="text-xl mb-4">Loading balance...</p>
+              <p className="text-xl mb-6 text-center">Loading balance...</p>
             )}
-            <button
-              onClick={handleCreate}
-              disabled={isCreating}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-            >
-              {isCreating ? 'Creating...' : 'Create Record'}
-            </button>
-          </>
+            <GameCreationForm onSubmit={handleCreate} isCreating={isCreating} />
+          </div>
         ) : (
-          <h1 className="text-3xl font-bold">Please connect your wallet</h1>
+          <h1 className="text-3xl font-bold text-center">Please connect your wallet</h1>
         )}
       </main>
     </div>
