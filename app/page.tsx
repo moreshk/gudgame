@@ -1,10 +1,12 @@
 'use client';
 
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+// import { LAMPORTS_PER_SOL, PublicKey, Transaction as web3Transaction } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import { createRecord } from './server/createRecord';
+import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+
 
 export default function Home() {
   const { publicKey } = useWallet();
@@ -34,11 +36,31 @@ export default function Home() {
   }, [publicKey, connection]);
 
   const handleCreate = async () => {
-    if (!publicKey) return;
-
+    if (!publicKey || !connection) return;
+  
     setIsCreating(true);
     try {
-      const result = await createRecord(publicKey.toString());
+      const latestBlockhash = await connection.getLatestBlockhash();
+  
+      const transaction = new Transaction({
+        feePayer: publicKey,
+        recentBlockhash: latestBlockhash.blockhash,
+      }).add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey('9BAa8bSQrUAT3nipra5bt3DJbW2Wyqfc2SXw3vGcjpbj'),
+          lamports: 0.001 * LAMPORTS_PER_SOL,
+        })
+      );
+  
+      const { signature } = await window.solana.signAndSendTransaction(transaction);
+      await connection.confirmTransaction({
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      });
+  
+      const result = await createRecord(publicKey.toString(), signature);
       if (result.success) {
         alert(`Record created with ID: ${result.id}`);
       } else {
