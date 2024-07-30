@@ -16,6 +16,8 @@ export default async function GamesPage() {
       <table className="w-full border-collapse">
         <thead className="bg-gray-800 text-white">
           <tr>
+            <th className="px-4 py-2">ID</th>
+            <th className="px-4 py-2">Creator Address</th>
             <th className="px-4 py-2 text-right">Max Possibilities</th>
             <th className="px-4 py-2 text-right">Initial Threshold</th>
             <th className="px-4 py-2 text-right">Max Rounds</th>
@@ -25,6 +27,8 @@ export default async function GamesPage() {
         <tbody>
           {sortedGames?.map((game) => (
             <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700">
+              <td className="px-4 py-2 text-white">{game.id}</td>
+              <td className="px-4 py-2 text-white">{game.creator_address}</td>
               <td className="px-4 py-2 text-white text-right">{game.max_possibilities}</td>
               <td className="px-4 py-2 text-white text-right">{game.initial_threshold}</td>
               <td className="px-4 py-2 text-white text-right">{game.max_rounds}</td>
