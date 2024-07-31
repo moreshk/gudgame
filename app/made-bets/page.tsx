@@ -20,10 +20,9 @@ interface RPSBet {
 }
 
 interface DecryptedBet extends RPSBet {
-  decryptedMakerBet: string | null;
-  decryptedTakerBet: string | null;
-}
-
+    decryptedMakerBet: string | null;
+  }
+  
 export default function MyRPSBets() {
   const { publicKey } = useWallet();
   const [myBets, setMyBets] = useState<DecryptedBet[]>([]);
@@ -40,8 +39,7 @@ export default function MyRPSBets() {
       if (result.success) {
         const decryptedBets = await Promise.all((result.bets ?? []).map(async (bet) => {
           const decryptedMakerBet = await decryptBet(bet.maker_bet).catch(() => null);
-          const decryptedTakerBet = bet.taker_bet ? await decryptBet(bet.taker_bet).catch(() => null) : null;
-          return { ...bet, decryptedMakerBet, decryptedTakerBet };
+          return { ...bet, decryptedMakerBet };
         }));
         setMyBets(decryptedBets);
       } else {
@@ -87,12 +85,12 @@ export default function MyRPSBets() {
                   <span className="mr-2">Your Choice:</span>
                   {getBetIcon(bet.decryptedMakerBet)}
                 </div>
-                {bet.decryptedTakerBet && (
-                  <div className="flex items-center mb-2">
-                    <span className="mr-2">Opponent&apos;s Choice:</span>
-                    {getBetIcon(bet.decryptedTakerBet)}
-                  </div>
-                )}
+                {bet.taker_bet && (
+              <div className="flex items-center mb-2">
+                <span className="mr-2">Opponent&apos;s Choice:</span>
+                {getBetIcon(bet.taker_bet)}
+              </div>
+            )}
                 <p className="text-sm text-gray-400">
                   Created: {new Date(bet.bet_making_timestamp).toLocaleString()}
                 </p>

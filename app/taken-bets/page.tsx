@@ -21,11 +21,11 @@ interface RPSBet {
 
 interface DecryptedBet extends Omit<RPSBet, 'bet_taking_timestamp' | 'bet_taker_address' | 'taker_bet'> {
     decryptedMakerBet: string | null;
-    decryptedTakerBet: string | null;
     bet_taking_timestamp: Date | null;
     bet_taker_address: string | null;
     taker_bet: string | null;
 }
+
 
 export default function TakenRPSBets() {
   const { publicKey } = useWallet();
@@ -43,8 +43,7 @@ export default function TakenRPSBets() {
       if (result.success) {
         const decryptedBets = await Promise.all((result.bets ?? []).map(async (bet) => {
             const decryptedMakerBet = bet.maker_bet ? await decryptBet(bet.maker_bet).catch(() => null) : null;
-            const decryptedTakerBet = bet.taker_bet ? await decryptBet(bet.taker_bet).catch(() => null) : null;
-            return { ...bet, decryptedMakerBet, decryptedTakerBet };
+            return { ...bet, decryptedMakerBet };
         }));
         setTakenBets(decryptedBets);
       } else {
@@ -54,6 +53,7 @@ export default function TakenRPSBets() {
     }
     fetchAndDecryptBets();
   }, [publicKey]);
+
 
   const getBetIcon = (bet: string | null) => {
     switch (bet) {
@@ -87,8 +87,9 @@ export default function TakenRPSBets() {
                 </p>
                 <div className="flex items-center mb-2">
                   <span className="mr-2">Your Choice:</span>
-                  {getBetIcon(bet.decryptedTakerBet)}
+                  {getBetIcon(bet.taker_bet)}
                 </div>
+
                 <div className="flex items-center mb-2">
                   <span className="mr-2">Opponent&apos;s Choice:</span>
                   {getBetIcon(bet.decryptedMakerBet)}
