@@ -7,6 +7,7 @@ import Navbar from '../../components/Navbar';
 import { getRPSBetById } from '../../server/getRPSBetById';
 import { resolveRPSBet } from '../../server/resolveRPSBet';
 import BetOptions from '../../components/BetOptions';
+import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
 
 interface RPSBet {
   id: number;
@@ -28,6 +29,7 @@ export default function RPSBetDetails() {
   const { id } = useParams();
   const [bet, setBet] = useState<RPSBet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isResolving, setIsResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wallet = useWallet();
 
@@ -48,14 +50,13 @@ export default function RPSBetDetails() {
 
   const handleBetPlaced = async () => {
     if (id) {
+      setIsResolving(true);
       const result = await getRPSBetById(Number(id));
       if (result.success && result.bet) {
         setBet(result.bet);
-        // Automatically resolve the bet if both bets are placed
         if (result.bet.bet_taker_address && result.bet.taker_bet) {
           const resolveResult = await resolveRPSBet(Number(id));
           if (resolveResult.success) {
-            // Fetch the updated bet details after resolution
             const updatedResult = await getRPSBetById(Number(id));
             if (updatedResult.success && updatedResult.bet) {
               setBet(updatedResult.bet);
@@ -65,6 +66,7 @@ export default function RPSBetDetails() {
           }
         }
       }
+      setIsResolving(false);
     }
   };
 
@@ -78,7 +80,17 @@ export default function RPSBetDetails() {
         <h1 className="text-3xl font-bold mb-8 text-center">RPS Bet Details</h1>
         {isLoading && <p className="text-center">Loading bet details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
-        {bet && (
+        {isResolving && (
+          <div className="text-center">
+            <p className="mb-4">Bet resolving, please wait...</p>
+            <div className="flex justify-center space-x-4 text-4xl animate-pulse">
+              <FaHandRock />
+              <FaHandPaper />
+              <FaHandScissors />
+            </div>
+          </div>
+        )}
+        {bet && !isResolving && (
           <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
             <h2 className="text-2xl font-semibold mb-4">Bet #{bet.id}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

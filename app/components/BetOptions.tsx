@@ -15,6 +15,7 @@ interface BetOptionsProps {
 
 export default function BetOptions({ betId, betAmount, potAddress, onBetPlaced }: BetOptionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedChoice, setSelectedChoice] = useState<'Rock' | 'Paper' | 'Scissors' | null>(null);
   const wallet = useWallet();
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_ENDPOINT as string);
 
@@ -32,6 +33,7 @@ export default function BetOptions({ betId, betAmount, potAddress, onBetPlaced }
   const placeBet = async (choice: 'Rock' | 'Paper' | 'Scissors') => {
     if (!wallet.publicKey || !wallet.signTransaction) return;
     setIsProcessing(true);
+    setSelectedChoice(choice);
 
     try {
       const potPublicKey = new PublicKey(potAddress);
@@ -83,32 +85,49 @@ export default function BetOptions({ betId, betAmount, potAddress, onBetPlaced }
       console.error('Error placing bet:', error);
     } finally {
       setIsProcessing(false);
+      setSelectedChoice(null);
+    }
+  };
+
+  const getButtonClass = (choice: 'Rock' | 'Paper' | 'Scissors') => {
+    let baseClass = "text-4xl transition-colors ";
+    if (isProcessing && selectedChoice === choice) {
+      return baseClass + "text-yellow-400";
+    } else if (isProcessing) {
+      return baseClass + "text-gray-600 cursor-not-allowed";
+    } else {
+      return baseClass + "text-gray-400 hover:text-white";
     }
   };
 
   return (
-    <div className="flex justify-center mt-8 space-x-8">
-      <button
-        onClick={() => placeBet('Rock')}
-        disabled={isProcessing}
-        className="text-4xl text-gray-400 hover:text-white transition-colors"
-      >
-        <FaHandRock />
-      </button>
-      <button
-        onClick={() => placeBet('Paper')}
-        disabled={isProcessing}
-        className="text-4xl text-gray-400 hover:text-white transition-colors"
-      >
-        <FaHandPaper />
-      </button>
-      <button
-        onClick={() => placeBet('Scissors')}
-        disabled={isProcessing}
-        className="text-4xl text-gray-400 hover:text-white transition-colors"
-      >
-        <FaHandScissors />
-      </button>
+    <div className="flex flex-col items-center mt-8">
+      <div className="flex justify-center space-x-8 mb-4">
+        <button
+          onClick={() => placeBet('Rock')}
+          disabled={isProcessing}
+          className={getButtonClass('Rock')}
+        >
+          <FaHandRock />
+        </button>
+        <button
+          onClick={() => placeBet('Paper')}
+          disabled={isProcessing}
+          className={getButtonClass('Paper')}
+        >
+          <FaHandPaper />
+        </button>
+        <button
+          onClick={() => placeBet('Scissors')}
+          disabled={isProcessing}
+          className={getButtonClass('Scissors')}
+        >
+          <FaHandScissors />
+        </button>
+      </div>
+      {isProcessing && (
+        <p className="text-yellow-400">Processing bet, please confirm the transaction in your wallet...</p>
+      )}
     </div>
   );
 }
