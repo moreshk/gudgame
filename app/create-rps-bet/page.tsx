@@ -16,11 +16,21 @@ export default function CreateRPSBet() {
   const [amount, setAmount] = useState('');
   const [selectedBet, setSelectedBet] = useState<'Rock' | 'Paper' | 'Scissors' | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleCreate = async () => {
     if (!wallet.publicKey || !connection || !selectedBet || !amount) return;
 
+    // Validate minimum bet amount
+    if (parseFloat(amount) < 0.1) {
+      setErrorMessage('Minimum bet amount is 0.1 SOL');
+      return;
+    }
+
     setIsCreating(true);
+    setErrorMessage('');
+    setSuccessMessage('');
     try {
       // Create pot address
       const potResult = await createSolanaPotAddress();
@@ -67,13 +77,13 @@ export default function CreateRPSBet() {
       });
 
       if (betResult.success) {
-        alert(`RPS bet created with ID: ${betResult.id}`);
+        setSuccessMessage(`RPS bet created with ID: ${betResult.id}`);
       } else {
         throw new Error(betResult.error);
       }
     } catch (error) {
       console.error('Error creating RPS bet:', error);
-      alert('Failed to create RPS bet');
+      setErrorMessage('Failed to create RPS bet');
     } finally {
       setIsCreating(false);
     }
@@ -85,7 +95,13 @@ export default function CreateRPSBet() {
       <main className="flex-grow flex flex-col items-center justify-center p-4">
         {wallet.publicKey ? (
           <div className="w-full max-w-md">
-            <h1 className="text-3xl font-bold mb-4 text-center">Create RPS Bet</h1>
+            <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1>
+            {errorMessage && (
+              <div className="mb-4 p-2 bg-red-500 text-white rounded">{errorMessage}</div>
+            )}
+            {successMessage && (
+              <div className="mb-4 p-2 bg-green-500 text-white rounded">{successMessage}</div>
+            )}
             <div className="mb-4">
               <label htmlFor="amount" className="block mb-2">Amount (SOL)</label>
               <input
@@ -95,8 +111,8 @@ export default function CreateRPSBet() {
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full p-2 border rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 step="0.01"
-                min="0"
-                placeholder="Enter amount"
+                min="0.1"
+                placeholder="Enter amount (min 0.1 SOL)"
               />
             </div>
             <div className="flex justify-between mb-4">
