@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
-import Link from 'next/link';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import Navbar from '../components/Navbar';
 import { getOpenRPSBets } from '../server/getOpenRPSBets';
+import RPSBetCard from '../components/RPSBetCard';
 
 interface OpenRPSBet {
   id: number;
@@ -18,6 +18,8 @@ export default function OpenRPSBets() {
   const [openBets, setOpenBets] = useState<OpenRPSBet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const wallet = useWallet();
+  const { connection } = useConnection();
 
   useEffect(() => {
     async function fetchOpenBets() {
@@ -41,30 +43,12 @@ export default function OpenRPSBets() {
         {error && <p className="text-center text-red-500">{error}</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {openBets.map((bet) => (
-            <Link key={bet.id} href={`/rps-bet/${bet.id}`}>
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors">
-                <p className="text-lg font-semibold mb-2">Bet Amount: {bet.bet_amount} SOL</p>
-                <p className="text-sm text-gray-400 mb-4">
-                  Maker: {bet.bet_maker_address.slice(0, 4)}...{bet.bet_maker_address.slice(-4)}
-                </p>
-                <div className="flex justify-between">
-                  {['Rock', 'Paper', 'Scissors'].map((choice) => (
-                    <button
-                      key={choice}
-                      className="flex-1 mx-1 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        // Add logic here to handle bet taking
-                      }}
-                    >
-                      {choice === 'Rock' && <FaHandRock className="mx-auto" />}
-                      {choice === 'Paper' && <FaHandPaper className="mx-auto" />}
-                      {choice === 'Scissors' && <FaHandScissors className="mx-auto" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </Link>
+            <RPSBetCard
+              key={bet.id}
+              bet={bet}
+              wallet={wallet}
+              connection={connection}
+            />
           ))}
         </div>
       </main>
