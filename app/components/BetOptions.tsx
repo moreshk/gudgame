@@ -75,7 +75,7 @@ export default function BetOptions({ betId, betAmount, potAddress, onBetPlaced }
       });
 
       if (updateResult.success) {
-        onBetPlaced();
+        onBetPlaced(); // This will trigger the automatic resolution in the parent component
       } else {
         console.error('Failed to update bet:', updateResult.error);
       }

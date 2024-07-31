@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Navbar from '../../components/Navbar';
 import { getRPSBetById } from '../../server/getRPSBetById';
+import { resolveRPSBet } from '../../server/resolveRPSBet';
 import BetOptions from '../../components/BetOptions';
 
 interface RPSBet {
@@ -50,6 +51,19 @@ export default function RPSBetDetails() {
       const result = await getRPSBetById(Number(id));
       if (result.success && result.bet) {
         setBet(result.bet);
+        // Automatically resolve the bet if both bets are placed
+        if (result.bet.bet_taker_address && result.bet.taker_bet) {
+          const resolveResult = await resolveRPSBet(Number(id));
+          if (resolveResult.success) {
+            // Fetch the updated bet details after resolution
+            const updatedResult = await getRPSBetById(Number(id));
+            if (updatedResult.success && updatedResult.bet) {
+              setBet(updatedResult.bet);
+            }
+          } else {
+            setError(resolveResult.error || 'Failed to resolve bet');
+          }
+        }
       }
     }
   };
@@ -74,7 +88,7 @@ export default function RPSBetDetails() {
               </div>
               <div>
                 <p className="font-semibold">Pot Address:</p>
-                <p className="break-all">{formatAddress(bet.pot_address)}</p>
+                <p className="break-all">{bet.pot_address}</p>
               </div>
               <div>
                 <p className="font-semibold">Maker Address:</p>
@@ -101,10 +115,18 @@ export default function RPSBetDetails() {
                 </>
               )}
               {bet.winner_address && (
-                <div>
-                  <p className="font-semibold">Winner:</p>
-                  <p className="break-all">{formatAddress(bet.winner_address)}</p>
-                </div>
+                <>
+                  <div>
+                    <p className="font-semibold">Winner:</p>
+                    <p className="break-all">{formatAddress(bet.winner_address)}</p>
+                  </div>
+                  {bet.winnings_disbursement_signature && (
+                    <div>
+                      <p className="font-semibold">Winnings Disbursement Signature:</p>
+                      <p className="break-all">{bet.winnings_disbursement_signature}</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
             {!bet.bet_taker_address && wallet.connected && (

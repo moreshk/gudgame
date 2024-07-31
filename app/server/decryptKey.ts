@@ -16,6 +16,12 @@ export async function decryptPrivateKey(encryptedData: string): Promise<string> 
 
     // Split the encrypted data into IV and encrypted private key
     const [ivHex, encryptedPrivateKey] = encryptedData.split(':');
+    
+    // Ensure IV is 16 bytes (32 characters in hex)
+    if (ivHex.length !== 32) {
+      throw new Error('Invalid IV length');
+    }
+    
     const iv = Buffer.from(ivHex, 'hex');
 
     // Create decipher
@@ -28,6 +34,10 @@ export async function decryptPrivateKey(encryptedData: string): Promise<string> 
     return decrypted;
   } catch (error) {
     console.error('Error decrypting private key:', error);
-    throw new Error('Failed to decrypt private key');
+    if (error instanceof Error) {
+      throw new Error(`Failed to decrypt private key: ${error.message}`);
+    } else {
+      throw new Error('Failed to decrypt private key: Unknown error');
+    }
   }
 }

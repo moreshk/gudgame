@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { createSolanaPotAddress } from '../server/createPot';
 import { createRPSBet } from '../server/createRPSBet';
@@ -13,11 +14,11 @@ const HOUSE_ADDRESS = process.env.NEXT_PUBLIC_HOUSE_ADDRESS || '9BAa8bSQrUAT3nip
 export default function CreateRPSBet() {
   const wallet = useWallet();
   const { connection } = useConnection();
+  const router = useRouter();
   const [amount, setAmount] = useState('');
   const [selectedBet, setSelectedBet] = useState<'Rock' | 'Paper' | 'Scissors' | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   const handleCreate = async () => {
     if (!wallet.publicKey || !connection || !selectedBet || !amount) return;
@@ -30,7 +31,6 @@ export default function CreateRPSBet() {
 
     setIsCreating(true);
     setErrorMessage('');
-    setSuccessMessage('');
     try {
       // Create pot address
       const potResult = await createSolanaPotAddress();
@@ -66,7 +66,7 @@ export default function CreateRPSBet() {
         blockhash: latestBlockhash.blockhash,
         lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
       });
-      //Make sure this has completed, else do not create the bet
+
       // Create RPS bet
       const betResult = await createRPSBet({
         betMakerAddress: wallet.publicKey.toString(),
@@ -77,7 +77,7 @@ export default function CreateRPSBet() {
       });
 
       if (betResult.success) {
-        setSuccessMessage(`RPS bet created with ID: ${betResult.id}`);
+        router.push(`/rps-bet/${betResult.id}`);
       } else {
         throw new Error(betResult.error);
       }
@@ -98,9 +98,6 @@ export default function CreateRPSBet() {
             <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1>
             {errorMessage && (
               <div className="mb-4 p-2 bg-red-500 text-white rounded">{errorMessage}</div>
-            )}
-            {successMessage && (
-              <div className="mb-4 p-2 bg-green-500 text-white rounded">{successMessage}</div>
             )}
             <div className="mb-4">
               <label htmlFor="amount" className="block mb-2">Amount (SOL)</label>
