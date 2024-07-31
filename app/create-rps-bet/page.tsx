@@ -56,7 +56,7 @@ export default function CreateRPSBet() {
         blockhash: latestBlockhash.blockhash,
         lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
       });
-
+      //Make sure this has completed, else do not create the bet
       // Create RPS bet
       const betResult = await createRPSBet({
         betMakerAddress: wallet.publicKey.toString(),
