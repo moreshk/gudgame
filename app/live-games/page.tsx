@@ -7,12 +7,16 @@ export default async function GamesPage() {
     return <div className="text-red-500">Error: {error}</div>;
   }
 
+  console.log(`Received ${games?.length} games in the component`);
+
   const sortedGames = games?.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  console.log(`Sorted ${sortedGames?.length} games`);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4 text-white">Active Games</h1>
-      <div className="overflow-x-auto">
+      <h1 className="text-2xl font-bold mb-4 text-white">Active Games ({sortedGames?.length})</h1>
+       <div className="overflow-x-auto">
       <table className="w-full border-collapse">
         <thead className="bg-gray-800 text-white">
           <tr>
