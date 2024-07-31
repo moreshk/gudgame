@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
+import { useWallet } from '@solana/wallet-adapter-react';
 import Navbar from '../../components/Navbar';
 import { getRPSBetById } from '../../server/getRPSBetById';
+import BetOptions from '../../components/BetOptions';
 
 interface RPSBet {
   id: number;
@@ -27,21 +28,31 @@ export default function RPSBetDetails() {
   const [bet, setBet] = useState<RPSBet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const wallet = useWallet();
 
   useEffect(() => {
     async function fetchBet() {
       if (id) {
         const result = await getRPSBetById(Number(id));
         if (result.success && result.bet) {
-            setBet(result.bet);
-          } else {
-            setError(result.error || 'Failed to fetch bet details');
+          setBet(result.bet);
+        } else {
+          setError(result.error || 'Failed to fetch bet details');
         }
         setIsLoading(false);
       }
     }
     fetchBet();
   }, [id]);
+
+  const handleBetPlaced = async () => {
+    if (id) {
+      const result = await getRPSBetById(Number(id));
+      if (result.success && result.bet) {
+        setBet(result.bet);
+      }
+    }
+  };
 
   const formatAddress = (address: string) => `${address.slice(0, 4)}...${address.slice(-4)}`;
   const formatDate = (date: Date) => new Date(date).toLocaleString();
@@ -69,10 +80,6 @@ export default function RPSBetDetails() {
                 <p className="font-semibold">Maker Address:</p>
                 <p className="break-all">{formatAddress(bet.bet_maker_address)}</p>
               </div>
-              {/* <div>
-                <p className="font-semibold">Maker Bet:</p>
-                <p>{bet.maker_bet}</p>
-              </div> */}
               <div>
                 <p className="font-semibold">Bet Making Time:</p>
                 <p>{formatDate(bet.bet_making_timestamp)}</p>
@@ -100,13 +107,16 @@ export default function RPSBetDetails() {
                 </div>
               )}
             </div>
+            {!bet.bet_taker_address && wallet.connected && (
+              <BetOptions
+                betId={bet.id}
+                betAmount={bet.bet_amount}
+                potAddress={bet.pot_address}
+                onBetPlaced={handleBetPlaced}
+              />
+            )}
           </div>
         )}
-        <div className="flex justify-center mt-8 space-x-8">
-          <FaHandRock className="text-4xl text-gray-400" />
-          <FaHandPaper className="text-4xl text-gray-400" />
-          <FaHandScissors className="text-4xl text-gray-400" />
-        </div>
       </main>
     </div>
   );

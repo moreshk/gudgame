@@ -1,5 +1,5 @@
 'use client';
-
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import Navbar from '../components/Navbar';
@@ -22,17 +22,23 @@ export default function OpenRPSBets() {
   const { connection } = useConnection();
 
   useEffect(() => {
-    async function fetchOpenBets() {
-      const result = await getOpenRPSBets();
-      if (result.success) {
-        setOpenBets(result.bets ?? []);
-      } else {
-        setError(result.error || 'Failed to fetch open bets');
-      }
-      setIsLoading(false);
-    }
     fetchOpenBets();
   }, []);
+
+  async function fetchOpenBets() {
+    setIsLoading(true);
+    const result = await getOpenRPSBets();
+    if (result.success) {
+      setOpenBets(result.bets ?? []);
+    } else {
+      setError(result.error || 'Failed to fetch open bets');
+    }
+    setIsLoading(false);
+  }
+
+  const handleBetTaken = (betId: number) => {
+    setOpenBets((prevBets) => prevBets.filter((bet) => bet.id !== betId));
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,12 +49,9 @@ export default function OpenRPSBets() {
         {error && <p className="text-center text-red-500">{error}</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {openBets.map((bet) => (
-            <RPSBetCard
-              key={bet.id}
-              bet={bet}
-              wallet={wallet}
-              connection={connection}
-            />
+            <Link href={`/rps-bet/${bet.id}`} key={bet.id}>
+              <RPSBetCard bet={bet} />
+            </Link>
           ))}
         </div>
       </main>
