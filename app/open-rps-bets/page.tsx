@@ -22,7 +22,7 @@ export default function OpenRPSBets() {
     async function fetchOpenBets() {
       const result = await getOpenRPSBets();
       if (result.success) {
-        setOpenBets(result.bets);
+        setOpenBets(result.bets ?? []);
       } else {
         setError(result.error || 'Failed to fetch open bets');
       }
