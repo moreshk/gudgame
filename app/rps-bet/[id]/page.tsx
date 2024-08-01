@@ -79,7 +79,9 @@ export default function RPSBetDetails() {
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Rock Paper Scissor Game Details</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">
+          Rock Paper Scissor Game Details
+        </h1>
         {isLoading && <p className="text-center">Loading bet details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {isResolving && (
@@ -101,27 +103,27 @@ export default function RPSBetDetails() {
                 <p>{bet.bet_amount} SOL</p>
               </div>
               <div>
-  <p className="font-semibold">Pot Address:</p>
-  <a
-    href={`https://solscan.io/account/${bet.pot_address}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-400 hover:text-blue-300 break-all"
-  >
-    {formatAddress(bet.pot_address)}
-  </a>
-</div>
+                <p className="font-semibold">Pot Address:</p>
+                <a
+                  href={`https://solscan.io/account/${bet.pot_address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 break-all"
+                >
+                  {formatAddress(bet.pot_address)}
+                </a>
+              </div>
               <div>
-  <p className="font-semibold">Maker Address:</p>
-  <a
-    href={`https://solscan.io/account/${bet.bet_maker_address}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-400 hover:text-blue-300 break-all"
-  >
-    {formatAddress(bet.bet_maker_address)}
-  </a>
-</div>
+                <p className="font-semibold">Maker Address:</p>
+                <a
+                  href={`https://solscan.io/account/${bet.bet_maker_address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 break-all"
+                >
+                  {formatAddress(bet.bet_maker_address)}
+                </a>
+              </div>
               <div>
                 <p className="font-semibold">Bet Making Time:</p>
                 <p>{formatDate(bet.bet_making_timestamp)}</p>
@@ -129,16 +131,16 @@ export default function RPSBetDetails() {
               {bet.bet_taker_address && (
                 <>
                   <div>
-      <p className="font-semibold">Taker Address:</p>
-      <a
-        href={`https://solscan.io/account/${bet.bet_taker_address}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-400 hover:text-blue-300 break-all"
-      >
-        {formatAddress(bet.bet_taker_address)}
-      </a>
-    </div>
+                    <p className="font-semibold">Taker Address:</p>
+                    <a
+                      href={`https://solscan.io/account/${bet.bet_taker_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 break-all"
+                    >
+                      {formatAddress(bet.bet_taker_address)}
+                    </a>
+                  </div>
                   <div>
                     <p className="font-semibold">Taker Bet:</p>
                     <p>{bet.taker_bet || "Not revealed"}</p>
@@ -156,16 +158,16 @@ export default function RPSBetDetails() {
               {bet.winner_address && (
                 <>
                   <div>
-      <p className="font-semibold">Winner:</p>
-      <a
-        href={`https://solscan.io/account/${bet.winner_address}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-400 hover:text-blue-300 break-all"
-      >
-        {formatAddress(bet.winner_address)}
-      </a>
-    </div>
+                    <p className="font-semibold">Winner:</p>
+                    <a
+                      href={`https://solscan.io/account/${bet.winner_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 break-all"
+                    >
+                      {formatAddress(bet.winner_address)}
+                    </a>
+                  </div>
                   {bet.winnings_disbursement_signature && (
                     <div>
                       <p className="font-semibold">Winnings Disbursement:</p>
