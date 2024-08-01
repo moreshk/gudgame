@@ -239,6 +239,10 @@ export default function RPSBetDetails() {
                 Share on X
               </button>
             </div>
+            <p className="mt-4 text-center text-sm text-gray-400">
+              Choose your move and match the game amount. Whoever wins gets the pot! <br />
+              Winnings are automatically sent to the winning wallet address.
+            </p>
           </>
         )}
       </main>
