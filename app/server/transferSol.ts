@@ -14,6 +14,30 @@ interface TransferSolInput {
   option: 1 | 2 | 3;
 }
 
+const confirmTransaction = async (
+  connection: Connection,
+  signature: string,
+  maxRetries = 10,
+  interval = 5000,
+  timeout = 120000
+) => {
+  const startTime = Date.now();
+  for (let i = 0; i < maxRetries; i++) {
+    if (Date.now() - startTime > timeout) {
+      throw new Error("Transaction confirmation timeout");
+    }
+    const confirmation = await connection.getSignatureStatus(signature);
+    if (
+      confirmation.value?.confirmationStatus === "confirmed" ||
+      confirmation.value?.confirmationStatus === "finalized"
+    ) {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+  throw new Error("Transaction confirmation timeout");
+};
+
 export async function transferSol(input: TransferSolInput) {
   try {
     const { publicKey, privateKey, destinationAddress1, destinationAddress2, option } = input;
@@ -84,8 +108,8 @@ export async function transferSol(input: TransferSolInput) {
     // Sign and send the transaction
     const signature = await connection.sendTransaction(transaction, [fromKeypair]);
 
-    // Wait for confirmation
-    await connection.confirmTransaction(signature);
+    // Wait for confirmation with increased timeout and retries
+    await confirmTransaction(connection, signature, 10, 5000, 120000);
 
     return {
       success: true,
@@ -94,6 +118,10 @@ export async function transferSol(input: TransferSolInput) {
     };
   } catch (error) {
     console.error('Error transferring SOL:', error);
-    return { success: false, error: 'Failed to transfer SOL' };
+    return { 
+      success: false, 
+      error: 'Failed to transfer SOL. Please check your transaction status in your wallet or try again.',
+      details: error instanceof Error ? error.message : String(error)
+    };
   }
 }

@@ -107,8 +107,8 @@ export default function CreateRPSBet() {
         throw new Error(betResult.error);
       }
     } catch (error) {
-      console.error('Error creating RPS bet:', error);
-      setErrorMessage('Failed to create RPS bet. Please check your wallet for the transaction status.');
+      console.error('Error creating RPS game:', error);
+      setErrorMessage('Failed to create RPS game. Please check your wallet for the transaction status.');
     } finally {
       setIsCreating(false);
     }

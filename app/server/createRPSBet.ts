@@ -59,6 +59,6 @@ export async function createRPSBet(input: CreateRPSBetInput) {
     };
   } catch (error) {
     console.error('Error creating RPS bet:', error);
-    return { success: false, error: 'Failed to create RPS bet' };
+    return { success: false, error: 'Failed to create RPS game' };
   }
 }
