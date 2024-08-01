@@ -142,6 +142,7 @@ export default function BetOptions({
 
   return (
     <div className="flex flex-col items-center mt-8">
+      <h3 className="text-lg font-semibold mb-4">Choose your move and see if you win!</h3>
       <div className="flex justify-center space-x-8 mb-4">
         <button
           onClick={() => handleIconClick("Rock")}
