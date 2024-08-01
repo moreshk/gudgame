@@ -40,7 +40,7 @@ export default function RPSBetDetails() {
         if (result.success && result.bet) {
           setBet(result.bet);
         } else {
-          setError(result.error || "Failed to fetch bet details");
+          setError(result.error || "Failed to fetch game details");
         }
         setIsLoading(false);
       }
@@ -82,11 +82,11 @@ export default function RPSBetDetails() {
         <h1 className="text-3xl font-bold mb-8 text-center">
           Rock Paper Scissor Game Details
         </h1>
-        {isLoading && <p className="text-center">Loading bet details...</p>}
+        {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {isResolving && (
           <div className="text-center">
-            <p className="mb-4">Bet resolving, please wait...</p>
+            <p className="mb-4">Game resolving, please wait...</p>
             <div className="flex justify-center space-x-4 text-4xl animate-pulse">
               <FaHandRock />
               <FaHandPaper />
@@ -96,10 +96,10 @@ export default function RPSBetDetails() {
         )}
         {bet && !isResolving && (
           <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-4">Bet #{bet.id}</h2>
+            <h2 className="text-2xl font-semibold mb-4">Game #{bet.id}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="font-semibold">Bet Amount:</p>
+                <p className="font-semibold">Game Amount:</p>
                 <p>{bet.bet_amount} SOL</p>
               </div>
               <div>
@@ -124,10 +124,10 @@ export default function RPSBetDetails() {
                   {formatAddress(bet.bet_maker_address)}
                 </a>
               </div>
-              <div>
+              {/* <div>
                 <p className="font-semibold">Bet Making Time:</p>
                 <p>{formatDate(bet.bet_making_timestamp)}</p>
-              </div>
+              </div> */}
               {bet.bet_taker_address && (
                 <>
                   <div>
@@ -142,17 +142,17 @@ export default function RPSBetDetails() {
                     </a>
                   </div>
                   <div>
-                    <p className="font-semibold">Taker Bet:</p>
+                    <p className="font-semibold">Taker Move:</p>
                     <p>{bet.taker_bet || "Not revealed"}</p>
                   </div>
-                  <div>
-                    <p className="font-semibold">Bet Taking Time:</p>
+                  {/* <div>
+                    <p className="font-semibold">Taking Time:</p>
                     <p>
                       {bet.bet_taking_timestamp
                         ? formatDate(bet.bet_taking_timestamp)
                         : "N/A"}
                     </p>
-                  </div>
+                  </div> */}
                 </>
               )}
               {bet.winner_address && (

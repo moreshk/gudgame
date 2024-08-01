@@ -14,7 +14,7 @@ interface RPSBetCardProps {
 export default function RPSBetCard({ bet }: RPSBetCardProps) {
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors">
-      <p className="text-lg font-semibold mb-2">Bet Amount: {bet.bet_amount} SOL</p>
+      <p className="text-lg font-semibold mb-2">Game Amount: {bet.bet_amount} SOL</p>
       <p className="text-sm text-gray-400 mb-4">
         Maker: {bet.bet_maker_address.slice(0, 4)}...{bet.bet_maker_address.slice(-4)}
       </p>
