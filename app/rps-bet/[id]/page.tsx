@@ -89,12 +89,23 @@ export default function RPSBetDetails() {
     `${signature.slice(0, 4)}...${signature.slice(-4)}`;
 
   const shareOnTwitter = () => {
-    if (bet) {
+    if (bet && wallet.publicKey) {
       const formattedAmount = Number(bet.bet_amount * 2).toFixed(2);
-      const tweetText = `Play me in Rock Paper Scissors @gudgamelol ! Winner gets ${formattedAmount} SOL - ${window.location.href}`;
-      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        tweetText
-      )}`;
+      let tweetText = '';
+  
+      if (!bet.bet_taker_address) {
+        tweetText = `Play me in Rock Paper Scissors @gudgamelol! Winner gets ${formattedAmount} SOL - ${window.location.href}`;
+      } else if (bet.winner_address) {
+        if (bet.winner_address === 'DRAW') {
+          tweetText = `I just drew a game of Rock Paper Scissors on @gudgamelol! What are the odds? Check it out: ${window.location.href}`;
+        } else if (bet.winner_address === wallet.publicKey.toBase58()) {
+          tweetText = `I just won ${formattedAmount} SOL playing Rock Paper Scissors on @gudgamelol! 🎉 Want to challenge me? ${window.location.href}`;
+        } else {
+          tweetText = `I just lost a nail-biting game of Rock Paper Scissors on @gudgamelol. Ready for a rematch? ${window.location.href}`;
+        }
+      }
+  
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
       window.open(twitterUrl, "_blank");
     }
   };
