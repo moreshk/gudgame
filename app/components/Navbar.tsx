@@ -29,13 +29,15 @@ const Navbar = () => {
   return (
     <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
       <div className="flex items-center">
-        <Image 
-          src="/logo.png" 
-          alt="Pot Luck Fun Logo" 
-          width={60} 
-          height={60} 
-          className="object-contain"
-        />
+        <Link href="/">
+          <Image 
+            src="/logo.png" 
+            alt="Pot Luck Fun Logo" 
+            width={60} 
+            height={60} 
+            className="object-contain"
+          />
+        </Link>
       </div>
       <div className="flex items-center space-x-4">
         <Link href="/create-rps-bet" className="hover:text-gray-300">Create</Link>
