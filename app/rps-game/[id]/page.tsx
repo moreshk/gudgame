@@ -107,11 +107,11 @@ export default function RPSBetDetails() {
         tweetText = `Play me in Rock Paper Scissors @gudgamelol! Winner gets ${formattedAmount} SOL - ${window.location.href}`;
       } else if (bet.winner_address) {
         if (bet.winner_address === "DRAW") {
-          tweetText = `I just drew a game of Rock Paper Scissors on @gudgamelol! What are the odds? Check it out: ${window.location.href}`;
+          tweetText = `I just drew a game of Rock Paper Scissors on @gudgamelol! What are the odds? Check it out: www.gudgame.lol`;
         } else if (bet.winner_address === wallet.publicKey.toBase58()) {
-          tweetText = `I just won ${formattedAmount} SOL playing Rock Paper Scissors on @gudgamelol! 🎉 Want to challenge me? ${window.location.href}`;
+          tweetText = `I just won ${formattedAmount} SOL playing Rock Paper Scissors on @gudgamelol! 🎉 Want to challenge me? www.gudgame.lol`;
         } else {
-          tweetText = `I just lost a nail-biting game of Rock Paper Scissors on @gudgamelol. Ready for a rematch? ${window.location.href}`;
+          tweetText = `I just lost a nail-biting game of Rock Paper Scissors on @gudgamelol. Ready for a rematch? www.gudgame.lol`;
         }
       }
 
