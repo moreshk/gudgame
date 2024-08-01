@@ -50,7 +50,7 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
           <Link href="/" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
-          <Link href="/open-rps-bets" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
+          <Link href="/open-rps-games" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
           <div>
             <button 
               onClick={() => setShowMyBets(!showMyBets)}
@@ -60,8 +60,8 @@ const Navbar = () => {
             </button>
             {showMyBets && (
               <div className="bg-gray-700">
-                <Link href="/made-bets" className="block py-2 px-8 hover:bg-gray-600">Made Games</Link>
-                <Link href="/taken-bets" className="block py-2 px-8 hover:bg-gray-600">Taken Games</Link>
+                <Link href="/made-games" className="block py-2 px-8 hover:bg-gray-600">Made Games</Link>
+                <Link href="/taken-games" className="block py-2 px-8 hover:bg-gray-600">Taken Games</Link>
               </div>
             )}
           </div>

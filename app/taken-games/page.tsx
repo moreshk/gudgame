@@ -81,7 +81,7 @@ export default function TakenRPSBets() {
         {error && <p className="text-center text-red-500">{error}</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {takenBets.map((bet) => (
-            <Link key={bet.id} href={`/rps-bet/${bet.id}`}>
+            <Link key={bet.id} href={`/rps-game/${bet.id}`}>
               <div className="bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors">
                 <p className="text-lg font-semibold mb-2">Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL</p>
                 <p className="text-sm text-gray-400 mb-2">

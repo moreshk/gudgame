@@ -82,7 +82,7 @@ export default function CreateRPSBet() {
       });
 
       if (betResult.success) {
-        router.push(`/rps-bet/${betResult.id}`);
+        router.push(`/rps-game/${betResult.id}`);
       } else {
         throw new Error(betResult.error);
       }

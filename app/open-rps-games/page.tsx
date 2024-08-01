@@ -49,7 +49,7 @@ export default function OpenRPSBets() {
         {error && <p className="text-center text-red-500">{error}</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {openBets.map((bet) => (
-            <Link href={`/rps-bet/${bet.id}`} key={bet.id}>
+            <Link href={`/rps-game/${bet.id}`} key={bet.id}>
               <RPSBetCard bet={bet} />
             </Link>
           ))}
