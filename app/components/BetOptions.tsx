@@ -19,6 +19,7 @@ interface BetOptionsProps {
   betAmount: number;
   potAddress: string;
   onBetPlaced: () => void;
+  isResolved: boolean; // Add this new prop
 }
 
 export default function BetOptions({
@@ -26,6 +27,7 @@ export default function BetOptions({
   betAmount,
   potAddress,
   onBetPlaced,
+  isResolved, // Add this new prop
 }: BetOptionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<
@@ -139,6 +141,10 @@ export default function BetOptions({
       return baseClass + "opacity-70 hover:opacity-100 cursor-pointer";
     }
   };
+
+  if (isResolved) {
+    return null; // Don't render anything if the bet is resolved
+  }
 
   return (
     <div className="flex flex-col items-center mt-8">

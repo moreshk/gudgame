@@ -33,6 +33,14 @@ export default function RPSBetDetails() {
   const [isResolving, setIsResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wallet = useWallet();
+  const isResolved = bet?.winner_address !== null || bet?.winnings_disbursement_signature !== null;
+
+  const getResultMessage = () => {
+    if (!bet || !wallet.publicKey) return '';
+    if (bet.winner_address === 'DRAW') return 'It\'s a draw!';
+    if (bet.winner_address === wallet.publicKey.toBase58()) return 'You won! 🎉';
+    return 'You lost 😢';
+  };
 
   useEffect(() => {
     async function fetchBet() {
@@ -98,22 +106,28 @@ export default function RPSBetDetails() {
         Rock Paper Scissor Game by {bet ? formatAddress(bet.bet_maker_address) : 'Loading...'}
       </h1> */}
        <h1 className="text-3xl font-bold mb-8 text-center">
-        {bet ? (
-          <>
-            <a
-              href={`https://solscan.io/account/${bet.bet_maker_address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300"
-            >
-              {formatAddress(bet.bet_maker_address)}
-            </a>{' '}
-            has started a game of Rock Paper Scissors
-          </>
-        ) : (
-          'Loading...'
-        )}
-      </h1>
+          {isLoading ? (
+            'Loading...'
+          ) : bet ? (
+            isResolved ? (
+              getResultMessage()
+            ) : (
+              <>
+                <a
+                  href={`https://solscan.io/account/${bet.bet_maker_address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300"
+                >
+                  {formatAddress(bet.bet_maker_address)}
+                </a>{' '}
+                has started a game of Rock Paper Scissors
+              </>
+            )
+          ) : (
+            'Game not found'
+          )}
+        </h1>
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {isResolving && (
@@ -222,12 +236,15 @@ export default function RPSBetDetails() {
               )}
             </div>
             
-            <BetOptions
+            {!isResolved && ( // Only render BetOptions if the bet is not resolved
+              <BetOptions
                 betId={bet.id}
                 betAmount={bet.bet_amount}
                 potAddress={bet.pot_address}
                 onBetPlaced={handleBetPlaced}
+                isResolved={isResolved} // Pass the new prop
               />
+            )}
               
           </div>
           <div className="mt-6 text-center">

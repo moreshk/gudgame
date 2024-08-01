@@ -4,6 +4,7 @@ import { sql } from "@vercel/postgres";
 import { getRPSBetById } from "./getRPSBetById";
 import { decryptPrivateKey } from "./decryptKey";
 import { transferSol } from "./transferSol";
+import { decryptBet } from "./decryptBet";
 
 interface ResolveRPSBetResult {
   success: boolean;
@@ -65,17 +66,28 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
       );
     }
 
+    // Decrypt the maker's bet
+    console.log("Decrypting maker's bet...");
+    let decryptedMakerBet;
+    try {
+      decryptedMakerBet = await decryptBet(bet.maker_bet);
+      console.log("Maker's bet decrypted successfully:", decryptedMakerBet);
+    } catch (decryptError) {
+      console.error("Error decrypting maker's bet:", decryptError);
+      throw new Error(`Failed to decrypt maker's bet: ${(decryptError as Error).message || "Unknown error"}`);
+    }
+
     // Determine the winner
     console.log("Determining the winner...");
     let option: 1 | 2 | 3;
     let winnerAddress: string;
-    if (bet.maker_bet === bet.taker_bet) {
+    if (decryptedMakerBet === bet.taker_bet) {
       option = 3; // Draw
       winnerAddress = "DRAW";
     } else if (
-      (bet.maker_bet === "Rock" && bet.taker_bet === "Scissors") ||
-      (bet.maker_bet === "Paper" && bet.taker_bet === "Rock") ||
-      (bet.maker_bet === "Scissors" && bet.taker_bet === "Paper")
+      (decryptedMakerBet === "Rock" && bet.taker_bet === "Scissors") ||
+      (decryptedMakerBet === "Paper" && bet.taker_bet === "Rock") ||
+      (decryptedMakerBet === "Scissors" && bet.taker_bet === "Paper")
     ) {
       option = 1; // Maker wins
       winnerAddress = bet.bet_maker_address;
