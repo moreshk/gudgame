@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { createSolanaPotAddress } from '../server/createPot';
 import { createRPSBet } from '../server/createRPSBet';
+import { sleep } from '../utils/sleep'; // Add this import
 
 const HOUSE_ADDRESS = process.env.NEXT_PUBLIC_HOUSE_ADDRESS || '9BAa8bSQrUAT3nipra5bt3DJbW2Wyqfc2SXw3vGcjpbj';
 
@@ -61,11 +62,35 @@ export default function CreateRPSBet() {
       );
 
       const signature = await wallet.sendTransaction(transaction, connection);
-      await connection.confirmTransaction({
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      });
+
+      // Wait for transaction confirmation with retry logic
+      const maxRetries = 5;
+      const retryDelay = 2000; // 2 seconds
+      let confirmed = false;
+
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const confirmation = await connection.confirmTransaction({
+            signature,
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          }, 'confirmed');
+
+          if (confirmation.value.err) {
+            throw new Error('Transaction failed');
+          }
+
+          confirmed = true;
+          break;
+        } catch (error) {
+          console.warn(`Confirmation attempt ${i + 1} failed. Retrying...`);
+          await sleep(retryDelay);
+        }
+      }
+
+      if (!confirmed) {
+        throw new Error('Transaction confirmation timed out');
+      }
 
       // Create RPS bet
       const betResult = await createRPSBet({
@@ -83,7 +108,7 @@ export default function CreateRPSBet() {
       }
     } catch (error) {
       console.error('Error creating RPS bet:', error);
-      setErrorMessage('Failed to create RPS bet');
+      setErrorMessage('Failed to create RPS bet. Please check your wallet for the transaction status.');
     } finally {
       setIsCreating(false);
     }
