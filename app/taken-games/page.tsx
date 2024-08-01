@@ -76,7 +76,7 @@ export default function TakenRPSBets() {
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Games Played</h1>
-        {!publicKey && <p className="text-center">Please connect your wallet to view your taken bets.</p>}
+        {!publicKey && <p className="text-center">Please connect your wallet to view your taken games.</p>}
         {isLoading && <p className="text-center">Loading your taken games...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
