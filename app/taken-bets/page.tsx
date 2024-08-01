@@ -85,8 +85,13 @@ export default function TakenRPSBets() {
               <div className="bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors">
                 <p className="text-lg font-semibold mb-2">Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL</p>
                 <p className="text-sm text-gray-400 mb-2">
-                  Status: <span className={`font-bold ${getBetStatus(bet) === 'Won' ? 'text-green-500' : getBetStatus(bet) === 'Lost' ? 'text-red-500' : 'text-yellow-500'}`}>{getBetStatus(bet)}</span>
-                </p>
+  Status: <span className={`font-bold ${
+    getBetStatus(bet) === 'Won' ? 'text-green-500' : 
+    getBetStatus(bet) === 'Lost' ? 'text-red-500' : 
+    getBetStatus(bet) === 'Draw' ? 'text-blue-500' : 
+    'text-yellow-500'
+  }`}>{getBetStatus(bet)}</span>
+</p>
                 <div className="flex items-center mb-2">
                   <span className="mr-2">Your Choice:</span>
                   <div className="w-8 h-8 flex items-center justify-center">
