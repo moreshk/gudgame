@@ -9,6 +9,7 @@ import { resolveRPSBet } from "../../server/resolveRPSBet";
 import BetOptions from "../../components/BetOptions";
 import { FaHandRock, FaHandPaper, FaHandScissors } from "react-icons/fa";
 import { FaTwitter } from "react-icons/fa"; // Add this import
+import Image from 'next/image'; // Add this import at the top of the file
 
 import Link from "next/link"; // Add this import at the top of the file
 
@@ -169,15 +170,13 @@ export default function RPSBetDetails() {
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {isResolving && (
-          <div className="text-center">
-            <p className="mb-4">Game resolving, please wait...</p>
-            <div className="flex justify-center space-x-4 text-4xl animate-pulse">
-              <FaHandRock />
-              <FaHandPaper />
-              <FaHandScissors />
-            </div>
-          </div>
-        )}
+  <div className="text-center">
+    <p className="mb-4">Game resolving, please wait...</p>
+    <div className="flex justify-center">
+  <Image src="/loading.gif" alt="Loading" width={180} height={180} />
+</div>
+  </div>
+)}
         {bet && !isResolving && (
           <>
             <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
