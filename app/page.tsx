@@ -130,7 +130,7 @@ export default function CreateRPSBet() {
               disabled={isCreating || !selectedBet || !amount}
               className="w-full p-2 bg-blue-500 text-white rounded disabled:bg-gray-600 disabled:text-gray-400"
             >
-              {isCreating ? 'Creating...' : 'Create Bet'}
+              {isCreating ? 'Creating...' : 'Create Game'}
             </button>
           </div>
         ) : (

@@ -41,18 +41,18 @@ const Navbar = () => {
       </div>
       <div className="flex items-center space-x-4">
         <Link href="/create-rps-bet" className="hover:text-gray-300">Create</Link>
-        <Link href="/open-rps-bets" className="hover:text-gray-300">Open Bets</Link>
+        <Link href="/open-rps-bets" className="hover:text-gray-300">Open Games</Link>
         <div className="relative">
           <button 
             onClick={() => setShowMyBets(!showMyBets)}
             className="hover:text-gray-300"
           >
-            My Bets
+            My Games
           </button>
           {showMyBets && (
             <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg py-1">
-              <Link href="/made-bets" className="block px-4 py-2 text-sm hover:bg-gray-600">Made Bets</Link>
-              <Link href="/taken-bets" className="block px-4 py-2 text-sm hover:bg-gray-600">Taken Bets</Link>
+              <Link href="/made-bets" className="block px-4 py-2 text-sm hover:bg-gray-600">Made Games</Link>
+              <Link href="/taken-bets" className="block px-4 py-2 text-sm hover:bg-gray-600">Taken Games</Link>
             </div>
           )}
         </div>
