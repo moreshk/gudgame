@@ -8,7 +8,11 @@ import { useRouter } from 'next/navigation';
 import Navbar from './components/Navbar';
 import { createSolanaPotAddress } from './server/createPot';
 import { createRPSBet } from './server/createRPSBet';
-
+import { Press_Start_2P } from 'next/font/google';
+const pressStart2P = Press_Start_2P({ 
+  weight: '400',
+  subsets: ['latin'],
+});
 
 const HOUSE_ADDRESS = process.env.NEXT_PUBLIC_HOUSE_ADDRESS || '9BAa8bSQrUAT3nipra5bt3DJbW2Wyqfc2SXw3vGcjpbj';
 
@@ -96,12 +100,15 @@ export default function CreateRPSBet() {
       <main className="flex-grow flex flex-col items-center justify-center p-4">
         {wallet.publicKey ? (
           <div className="w-full max-w-md">
-            <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1>
+            {/* <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1> */}
+            <h1 className={`text-2xl font-bold mb-4 text-center text-[#f13992] ${pressStart2P.className}`}>
+  Create a game of Rock, Paper, Scissors!
+</h1>
             {errorMessage && (
               <div className="mb-4 p-2 bg-red-500 text-white rounded">{errorMessage}</div>
             )}
             <div className="mb-4">
-              <label htmlFor="amount" className="block mb-2">Amount (SOL)</label>
+              {/* <label htmlFor="amount" className="block mb-2">Amount (SOL)</label> */}
               <input
                 type="number"
                 id="amount"
@@ -113,6 +120,7 @@ export default function CreateRPSBet() {
                 placeholder="Enter amount (min 0.1 SOL)"
               />
             </div>
+            <label htmlFor="amount" className="block mb-2">Pick your move:</label>
             <div className="flex justify-between mb-4">
               {['Rock', 'Paper', 'Scissors'].map((bet) => (
                 <button
