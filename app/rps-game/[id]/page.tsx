@@ -73,22 +73,32 @@ export default function RPSBetDetails() {
   const handleBetPlaced = async () => {
     if (id) {
       setIsResolving(true);
-      const result = await getRPSBetById(Number(id));
-      if (result.success && result.bet) {
-        setBet(result.bet);
-        if (result.bet.bet_taker_address && result.bet.taker_bet) {
-          const resolveResult = await resolveRPSBet(Number(id));
-          if (resolveResult.success) {
-            const updatedResult = await getRPSBetById(Number(id));
-            if (updatedResult.success && updatedResult.bet) {
-              setBet(updatedResult.bet);
+      try {
+        const result = await getRPSBetById(Number(id));
+        if (result.success && result.bet) {
+          setBet(result.bet);
+          if (result.bet.bet_taker_address && result.bet.taker_bet) {
+            const resolveResult = await resolveRPSBet(Number(id));
+            if (resolveResult && resolveResult.success) {
+              const updatedResult = await getRPSBetById(Number(id));
+              if (updatedResult.success && updatedResult.bet) {
+                setBet(updatedResult.bet);
+              } else {
+                throw new Error(updatedResult.error || "Failed to fetch updated bet");
+              }
+            } else {
+              throw new Error(resolveResult?.error || "Failed to resolve bet");
             }
-          } else {
-            setError(resolveResult.error || "Failed to resolve bet");
           }
+        } else {
+          throw new Error(result.error || "Failed to fetch bet");
         }
+      } catch (error) {
+        console.error("Error handling bet placement:", error);
+        setError(error instanceof Error ? error.message : "An unknown error occurred");
+      } finally {
+        setIsResolving(false);
       }
-      setIsResolving(false);
     }
   };
 
