@@ -39,14 +39,22 @@ export default function RPSBetDetails() {
     bet?.winner_address !== null ||
     bet?.winnings_disbursement_signature !== null;
 
+  // const getResultMessage = () => {
+  //   if (!bet || !wallet.publicKey) return "";
+  //   if (bet.winner_address === "DRAW") return "It's a draw!";
+  //   if (bet.winner_address === wallet.publicKey.toBase58())
+  //     return "You won! 🎉";
+  //   return "You lost 😢";
+  // };
+
   const getResultMessage = () => {
     if (!bet || !wallet.publicKey) return "";
+    const amount = Number(bet.bet_amount);
     if (bet.winner_address === "DRAW") return "It's a draw!";
     if (bet.winner_address === wallet.publicKey.toBase58())
-      return "You won! 🎉";
-    return "You lost 😢";
+      return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
+    return `You lost ${amount.toFixed(2)} SOL 😢`;
   };
-
   useEffect(() => {
     async function fetchBet() {
       if (id) {
@@ -165,13 +173,17 @@ export default function RPSBetDetails() {
             <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
               {/* <h2 className="text-2xl font-semibold mb-4">Game #{bet.id}</h2> */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  {/* <p className="font-semibold">Game Amount:</p>
-                <p>{bet.bet_amount} SOL</p> */}
-                  <p className="font-semibold mb-2">
-                    Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL
-                  </p>
-                </div>
+              <div>
+              <p className="font-semibold mb-2">
+                Game Amount: {isResolved 
+                  ? (bet.winner_address === "DRAW" 
+                    ? Number(bet.bet_amount).toFixed(2) 
+                    : (bet.winner_address === wallet.publicKey?.toBase58() 
+                      ? (Number(bet.bet_amount) * 2).toFixed(2) 
+                      : Number(bet.bet_amount).toFixed(2)))
+                  : Number(bet.bet_amount).toFixed(2)} SOL
+              </p>
+            </div>
                 <div>
                   <p className="font-semibold flex items-center justify-start md:justify-end">
                     <span className="mr-2">Pot Address:</span>
