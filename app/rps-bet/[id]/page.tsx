@@ -10,6 +10,8 @@ import BetOptions from "../../components/BetOptions";
 import { FaHandRock, FaHandPaper, FaHandScissors } from "react-icons/fa";
 import { FaTwitter } from "react-icons/fa"; // Add this import
 
+import Link from "next/link"; // Add this import at the top of the file
+
 interface RPSBet {
   id: number;
   bet_maker_address: string;
@@ -91,12 +93,12 @@ export default function RPSBetDetails() {
   const shareOnTwitter = () => {
     if (bet && wallet.publicKey) {
       const formattedAmount = Number(bet.bet_amount * 2).toFixed(2);
-      let tweetText = '';
-  
+      let tweetText = "";
+
       if (!bet.bet_taker_address) {
         tweetText = `Play me in Rock Paper Scissors @gudgamelol! Winner gets ${formattedAmount} SOL - ${window.location.href}`;
       } else if (bet.winner_address) {
-        if (bet.winner_address === 'DRAW') {
+        if (bet.winner_address === "DRAW") {
           tweetText = `I just drew a game of Rock Paper Scissors on @gudgamelol! What are the odds? Check it out: ${window.location.href}`;
         } else if (bet.winner_address === wallet.publicKey.toBase58()) {
           tweetText = `I just won ${formattedAmount} SOL playing Rock Paper Scissors on @gudgamelol! 🎉 Want to challenge me? ${window.location.href}`;
@@ -104,8 +106,10 @@ export default function RPSBetDetails() {
           tweetText = `I just lost a nail-biting game of Rock Paper Scissors on @gudgamelol. Ready for a rematch? ${window.location.href}`;
         }
       }
-  
-      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        tweetText
+      )}`;
       window.open(twitterUrl, "_blank");
     }
   };
@@ -181,7 +185,7 @@ export default function RPSBetDetails() {
                     </a>
                   </p>
                 </div>
-               
+
                 {bet.winner_address && (
                   <>
                     <div>
@@ -213,15 +217,39 @@ export default function RPSBetDetails() {
               </div>
 
               {!isResolved && ( // Only render BetOptions if the bet is not resolved
-                <BetOptions
-                  betId={bet.id}
-                  betAmount={bet.bet_amount}
-                  potAddress={bet.pot_address}
-                  onBetPlaced={handleBetPlaced}
-                  isResolved={isResolved} // Pass the new prop
-                />
+                <>
+                  <BetOptions
+                    betId={bet.id}
+                    betAmount={bet.bet_amount}
+                    potAddress={bet.pot_address}
+                    onBetPlaced={handleBetPlaced}
+                    isResolved={isResolved} // Pass the new prop
+                  />
+                  <p className="mt-4 text-center text-sm text-gray-400">
+                    Choose your move and match the game amount. Whoever wins
+                    gets the pot! <br />
+                    Winnings are automatically sent to the winning wallet
+                    address.
+                  </p>
+                </>
               )}
             </div>
+
+            {bet && !isResolving && (
+              <>
+                <div className="mt-6 text-center space-y-4">
+                  {isResolved && (
+                    <Link
+                      href="/"
+                      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-block"
+                    >
+                      Start New Game
+                    </Link>
+                  )}
+                </div>
+              </>
+            )}
+
             <div className="mt-6 text-center">
               <button
                 onClick={shareOnTwitter}
@@ -231,11 +259,6 @@ export default function RPSBetDetails() {
                 Share on X
               </button>
             </div>
-            <p className="mt-4 text-center text-sm text-gray-400">
-              Choose your move and match the game amount. Whoever wins gets the
-              pot! <br />
-              Winnings are automatically sent to the winning wallet address.
-            </p>
           </>
         )}
       </main>
