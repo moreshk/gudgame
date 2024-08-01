@@ -67,6 +67,7 @@ export default function TakenRPSBets() {
 
   const getBetStatus = (bet: DecryptedBet) => {
     if (bet.winner_address === null) return 'In Progress';
+    if (bet.winner_address === 'DRAW') return 'Draw';
     return bet.winner_address === bet.bet_taker_address ? 'Won' : 'Lost';
   };
 
