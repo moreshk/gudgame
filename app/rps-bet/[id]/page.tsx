@@ -185,7 +185,7 @@ export default function RPSBetDetails() {
                       </a>
                     </div>
                     {bet.winnings_disbursement_signature && (
-                      <div>
+                      <div className="text-left md:text-right">
                         <p className="font-semibold">Winnings Disbursement:</p>
                         <a
                           href={`https://solscan.io/tx/${bet.winnings_disbursement_signature}`}
