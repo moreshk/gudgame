@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-// import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
@@ -19,7 +18,7 @@ interface BetOptionsProps {
   betAmount: number;
   potAddress: string;
   onBetPlaced: () => void;
-  isResolved: boolean; // Add this new prop
+  isResolved: boolean;
 }
 
 export default function BetOptions({
@@ -27,9 +26,10 @@ export default function BetOptions({
   betAmount,
   potAddress,
   onBetPlaced,
-  isResolved, // Add this new prop
+  isResolved,
 }: BetOptionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<
     "Rock" | "Paper" | "Scissors" | null
   >(null);
@@ -42,8 +42,8 @@ export default function BetOptions({
   const confirmTransaction = async (
     signature: string,
     maxRetries = 10,
-  interval = 5000,
-  timeout = 60000
+    interval = 5000,
+    timeout = 60000
   ) => {
     const startTime = Date.now();
     for (let i = 0; i < maxRetries; i++) {
@@ -73,9 +73,9 @@ export default function BetOptions({
         process.env.NEXT_PUBLIC_HOUSE_ADDRESS as string
       );
 
-      const totalLamports = betAmount * 1e9; // Convert SOL to lamports
-      const potLamports = Math.floor(totalLamports * 0.9); // 90% to pot
-      const houseLamports = totalLamports - potLamports; // Remainder to house
+      const totalLamports = betAmount * 1e9;
+      const potLamports = Math.floor(totalLamports * 0.9);
+      const houseLamports = totalLamports - potLamports;
 
       const transaction = new Transaction().add(
         SystemProgram.transfer({
@@ -95,6 +95,11 @@ export default function BetOptions({
       transaction.feePayer = wallet.publicKey;
 
       const signedTx = await wallet.signTransaction(transaction);
+      
+      // Set isProcessing to false after user signs the transaction
+      setIsProcessing(false);
+      setIsConfirming(true);
+
       const txId = await sendAndConfirmRawTransaction(
         connection,
         signedTx.serialize(),
@@ -115,7 +120,7 @@ export default function BetOptions({
       });
 
       if (updateResult.success) {
-        onBetPlaced(); // This will trigger the automatic resolution in the parent component
+        onBetPlaced();
       } else {
         console.error("Failed to update bet:", updateResult.error);
       }
@@ -123,13 +128,14 @@ export default function BetOptions({
       console.error("Error placing bet:", error);
     } finally {
       setIsProcessing(false);
+      setIsConfirming(false);
       setSelectedChoice(null);
     }
   };
 
   const handleIconClick = async (choice: "Rock" | "Paper" | "Scissors") => {
     if (!wallet.connected) {
-      setVisible(true); // This will open the wallet selection modal
+      setVisible(true);
       return;
     }
 
@@ -138,9 +144,9 @@ export default function BetOptions({
 
   const getButtonClass = (choice: "Rock" | "Paper" | "Scissors") => {
     let baseClass = "transition-opacity border border-gray-400 rounded-md p-2 ";
-    if (isProcessing && selectedChoice === choice) {
+    if ((isProcessing || isConfirming) && selectedChoice === choice) {
       return baseClass + "opacity-100";
-    } else if (isProcessing) {
+    } else if (isProcessing || isConfirming) {
       return baseClass + "opacity-50 cursor-not-allowed";
     } else {
       return baseClass + "opacity-70 hover:opacity-100 cursor-pointer";
@@ -148,7 +154,7 @@ export default function BetOptions({
   };
 
   if (isResolved) {
-    return null; // Don't render anything if the bet is resolved
+    return null;
   }
 
   return (
@@ -157,21 +163,21 @@ export default function BetOptions({
       <div className="flex justify-center space-x-8 mb-4">
         <button
           onClick={() => handleIconClick("Rock")}
-          disabled={isProcessing}
+          disabled={isProcessing || isConfirming}
           className={getButtonClass("Rock")}
         >
           <Image src="/rock.png" alt="Rock" width={60} height={60} />
         </button>
         <button
           onClick={() => handleIconClick("Paper")}
-          disabled={isProcessing}
+          disabled={isProcessing || isConfirming}
           className={getButtonClass("Paper")}
         >
           <Image src="/paper.png" alt="Paper" width={60} height={60} />
         </button>
         <button
           onClick={() => handleIconClick("Scissors")}
-          disabled={isProcessing}
+          disabled={isProcessing || isConfirming}
           className={getButtonClass("Scissors")}
         >
           <Image src="/scissors.png" alt="Scissors" width={60} height={60} />
@@ -180,6 +186,11 @@ export default function BetOptions({
       {isProcessing && (
         <p className="text-yellow-400">
           Processing bet, please confirm the transaction in your wallet...
+        </p>
+      )}
+      {isConfirming && (
+        <p className="text-yellow-400">
+          Transaction signed. Waiting for confirmation on the blockchain...
         </p>
       )}
       {!wallet.connected && (
