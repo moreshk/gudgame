@@ -145,6 +145,11 @@ export default function CreateRPSBet() {
             >
               {isCreating ? 'Creating...' : 'Create Game'}
             </button>
+            <p className="mt-4 text-center text-sm text-gray-400">
+  Enter the amount you&apos;d like to put up and choose your move.<br />
+  Other players will match and choose theirs.<br />
+  Whoever wins gets the pot!
+</p>
           </div>
         ) : (
           <h1 className="text-3xl font-bold text-center">Please connect your wallet</h1>
