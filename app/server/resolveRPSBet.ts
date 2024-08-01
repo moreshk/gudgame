@@ -26,6 +26,17 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     const bet = betResult.bet;
     console.log("Game details:", JSON.stringify(bet, null, 2));
 
+    // Check if the bet is already resolved
+    if (bet.winner_address) {
+      console.log("Game is already resolved");
+      return {
+        success: true,
+        message: `Game was already resolved. Winner: ${
+          bet.winner_address === "DRAW" ? "Draw" : bet.winner_address
+        }`,
+      };
+    }
+
     // Ensure the bet is ready to be resolved
     if (!bet.bet_taker_address || !bet.taker_bet) {
       console.error("Game is not ready to be resolved");
@@ -52,7 +63,6 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     let privateKey;
     try {
       console.log("Attempting to decrypt private key...");
-      // Convert Buffer to string if it's a Buffer
       const encryptedPrivateKeyString = Buffer.isBuffer(encryptedPrivateKey)
         ? encryptedPrivateKey.toString("utf8")
         : encryptedPrivateKey;
@@ -99,36 +109,36 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     console.log(`Winner determined: ${winnerAddress}, Option: ${option}`);
 
     // Transfer SOL with retries
-  console.log("Initiating SOL transfer...");
-  const maxRetries = 3;
-  const retryDelay = 5000; // 5 seconds
-  let transferResult: { success: boolean; error?: string; signature?: string } = { success: false };
+    console.log("Initiating SOL transfer...");
+    const maxRetries = 3;
+    const retryDelay = 5000; // 5 seconds
+    let transferResult: { success: boolean; error?: string; signature?: string } = { success: false };
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    transferResult = await transferSol({
-      publicKey: bet.pot_address,
-      privateKey,
-      destinationAddress1: bet.bet_maker_address,
-      destinationAddress2: bet.bet_taker_address,
-      option,
-    });
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      transferResult = await transferSol({
+        publicKey: bet.pot_address,
+        privateKey,
+        destinationAddress1: bet.bet_maker_address,
+        destinationAddress2: bet.bet_taker_address,
+        option,
+      });
 
-    if (transferResult.success) {
-      console.log(`SOL transfer successful on attempt ${attempt}`);
-      break;
-    } else {
-      console.warn(`SOL transfer failed on attempt ${attempt}:`, transferResult.error);
-      if (attempt < maxRetries) {
-        console.log(`Retrying in ${retryDelay / 1000} seconds...`);
-        await setTimeout(retryDelay);
+      if (transferResult.success) {
+        console.log(`SOL transfer successful on attempt ${attempt}`);
+        break;
+      } else {
+        console.warn(`SOL transfer failed on attempt ${attempt}:`, transferResult.error);
+        if (attempt < maxRetries) {
+          console.log(`Retrying in ${retryDelay / 1000} seconds...`);
+          await setTimeout(retryDelay);
+        }
       }
     }
-  }
 
-  if (!transferResult.success) {
-    console.error("Failed to transfer SOL after all retry attempts:", transferResult.error);
-    throw new Error(transferResult.error || "Failed to transfer SOL after multiple attempts");
-  }
+    if (!transferResult.success) {
+      console.error("Failed to transfer SOL after all retry attempts:", transferResult.error);
+      throw new Error(transferResult.error || "Failed to transfer SOL after multiple attempts");
+    }
 
     // Update the bet record
     console.log("Updating game record...");
