@@ -8,6 +8,7 @@ import { getRPSBetById } from "../../server/getRPSBetById";
 import { resolveRPSBet } from "../../server/resolveRPSBet";
 import BetOptions from "../../components/BetOptions";
 import { FaHandRock, FaHandPaper, FaHandScissors } from "react-icons/fa";
+import { FaTwitter } from "react-icons/fa"; // Add this import
 
 interface RPSBet {
   id: number;
@@ -75,6 +76,16 @@ export default function RPSBetDetails() {
   const formatDate = (date: Date) => new Date(date).toLocaleString();
   const formatSignature = (signature: string) =>
     `${signature.slice(0, 4)}...${signature.slice(-4)}`;
+
+  const shareOnTwitter = () => {
+    if (bet) {
+      const formattedAmount = Number(bet.bet_amount).toFixed(2);
+      const tweetText = `I'm playing Rock Paper Scissors on-chain! Join me in this ${formattedAmount} SOL game: ${window.location.href}`;
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+      window.open(twitterUrl, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <Navbar />
@@ -116,6 +127,7 @@ export default function RPSBetDetails() {
           </div>
         )}
         {bet && !isResolving && (
+          <>
           <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
             {/* <h2 className="text-2xl font-semibold mb-4">Game #{bet.id}</h2> */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -214,7 +226,18 @@ export default function RPSBetDetails() {
                 potAddress={bet.pot_address}
                 onBetPlaced={handleBetPlaced}
               />
+              
           </div>
+          <div className="mt-6 text-center">
+              <button
+                onClick={shareOnTwitter}
+                className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+              >
+                <FaTwitter className="mr-2" />
+                Share on X
+              </button>
+            </div>
+          </>
         )}
       </main>
     </div>
