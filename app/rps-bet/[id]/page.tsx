@@ -134,20 +134,22 @@ export default function RPSBetDetails() {
               <div>
                 {/* <p className="font-semibold">Game Amount:</p>
                 <p>{bet.bet_amount} SOL</p> */}
-                <p className="text-lg font-semibold mb-2">Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL</p>
+                <p className="font-semibold mb-2">Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL</p>
 
               </div>
               <div>
-                <p className="font-semibold">Pot Address:</p>
-                <a
-                  href={`https://solscan.io/account/${bet.pot_address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 break-all"
-                >
-                  {formatAddress(bet.pot_address)}
-                </a>
-              </div>
+  <p className="font-semibold flex items-center justify-start md:justify-end">
+    <span className="mr-2">Pot Address:</span>
+    <a
+      href={`https://solscan.io/account/${bet.pot_address}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-400 hover:text-blue-300"
+    >
+      {formatAddress(bet.pot_address)}
+    </a>
+  </p>
+</div>
               {/* <div>
                 <p className="font-semibold">Maker Address:</p>
                 <a
