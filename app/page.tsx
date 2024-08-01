@@ -88,7 +88,7 @@ export default function CreateRPSBet() {
       }
     } catch (error) {
       console.error('Error creating RPS bet:', error);
-      setErrorMessage('Failed to create RPS bet');
+      setErrorMessage('Failed to create RPS game');
     } finally {
       setIsCreating(false);
     }
