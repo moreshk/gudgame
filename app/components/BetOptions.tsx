@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
+// import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmRawTransaction } from '@solana/web3.js';
 import { updateRPSBet } from '../server/updateRPSBets';
+import Image from 'next/image';
 
 interface BetOptionsProps {
   betId: number;
@@ -17,6 +19,7 @@ export default function BetOptions({ betId, betAmount, potAddress, onBetPlaced }
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<'Rock' | 'Paper' | 'Scissors' | null>(null);
   const wallet = useWallet();
+  const { setVisible } = useWalletModal();
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_ENDPOINT as string);
 
   const confirmTransaction = async (signature: string, maxRetries = 5, interval = 1000) => {
@@ -89,45 +92,57 @@ export default function BetOptions({ betId, betAmount, potAddress, onBetPlaced }
     }
   };
 
+  const handleIconClick = async (choice: 'Rock' | 'Paper' | 'Scissors') => {
+    if (!wallet.connected) {
+      setVisible(true); // This will open the wallet selection modal
+      return;
+    }
+    
+    await placeBet(choice);
+  };
+
   const getButtonClass = (choice: 'Rock' | 'Paper' | 'Scissors') => {
-    let baseClass = "text-4xl transition-colors ";
+    let baseClass = "transition-opacity ";
     if (isProcessing && selectedChoice === choice) {
-      return baseClass + "text-yellow-400";
+      return baseClass + "opacity-100";
     } else if (isProcessing) {
-      return baseClass + "text-gray-600 cursor-not-allowed";
+      return baseClass + "opacity-50 cursor-not-allowed";
     } else {
-      return baseClass + "text-gray-400 hover:text-white";
+      return baseClass + "opacity-70 hover:opacity-100 cursor-pointer";
     }
   };
 
   return (
     <div className="flex flex-col items-center mt-8">
-      <div className="flex justify-center space-x-8 mb-4">
-        <button
-          onClick={() => placeBet('Rock')}
-          disabled={isProcessing}
-          className={getButtonClass('Rock')}
-        >
-          <FaHandRock />
-        </button>
-        <button
-          onClick={() => placeBet('Paper')}
-          disabled={isProcessing}
-          className={getButtonClass('Paper')}
-        >
-          <FaHandPaper />
-        </button>
-        <button
-          onClick={() => placeBet('Scissors')}
-          disabled={isProcessing}
-          className={getButtonClass('Scissors')}
-        >
-          <FaHandScissors />
-        </button>
-      </div>
-      {isProcessing && (
-        <p className="text-yellow-400">Processing bet, please confirm the transaction in your wallet...</p>
-      )}
-    </div>
+  <div className="flex justify-center space-x-8 mb-4">
+    <button
+      onClick={() => handleIconClick('Rock')}
+      disabled={isProcessing}
+      className={getButtonClass('Rock')}
+    >
+      <Image src="/rock.png" alt="Rock" width={60} height={60} />
+    </button>
+    <button
+      onClick={() => handleIconClick('Paper')}
+      disabled={isProcessing}
+      className={getButtonClass('Paper')}
+    >
+      <Image src="/paper.png" alt="Paper" width={60} height={60} />
+    </button>
+    <button
+      onClick={() => handleIconClick('Scissors')}
+      disabled={isProcessing}
+      className={getButtonClass('Scissors')}
+    >
+      <Image src="/scissors.png" alt="Scissors" width={60} height={60} />
+    </button>
+  </div>
+  {isProcessing && (
+    <p className="text-yellow-400">Processing bet, please confirm the transaction in your wallet...</p>
+  )}
+  {!wallet.connected && (
+    <p className="text-sm text-gray-400 mt-2">Click an icon to connect your wallet and place a bet</p>
+  )}
+</div>
   );
 }

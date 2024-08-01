@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
+import Image from 'next/image';
 import Navbar from '../components/Navbar';
 import { getRPSBetsByTaker } from '../server/getRPSBetsByTaker';
 import { decryptBet } from '../server/decryptBet';
 import Link from 'next/link';
+
 
 interface RPSBet {
   id: number;
@@ -57,9 +58,9 @@ export default function TakenRPSBets() {
 
   const getBetIcon = (bet: string | null) => {
     switch (bet) {
-      case 'Rock': return <FaHandRock />;
-      case 'Paper': return <FaHandPaper />;
-      case 'Scissors': return <FaHandScissors />;
+      case 'Rock': return <Image src="/rock.png" alt="Rock" width={30} height={30} />;
+      case 'Paper': return <Image src="/paper.png" alt="Paper" width={30} height={30} />;
+      case 'Scissors': return <Image src="/scissors.png" alt="Scissors" width={30} height={30} />;
       default: return null;
     }
   };
@@ -73,7 +74,7 @@ export default function TakenRPSBets() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Rock Paper Scissor Games I entered into</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">Games Played</h1>
         {!publicKey && <p className="text-center">Please connect your wallet to view your taken bets.</p>}
         {isLoading && <p className="text-center">Loading your taken bets...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
@@ -81,18 +82,21 @@ export default function TakenRPSBets() {
           {takenBets.map((bet) => (
             <Link key={bet.id} href={`/rps-bet/${bet.id}`}>
               <div className="bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors">
-                <p className="text-lg font-semibold mb-2">Game Amount: {bet.bet_amount} SOL</p>
+                <p className="text-lg font-semibold mb-2">Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL</p>
                 <p className="text-sm text-gray-400 mb-2">
                   Status: <span className={`font-bold ${getBetStatus(bet) === 'Won' ? 'text-green-500' : getBetStatus(bet) === 'Lost' ? 'text-red-500' : 'text-yellow-500'}`}>{getBetStatus(bet)}</span>
                 </p>
                 <div className="flex items-center mb-2">
                   <span className="mr-2">Your Choice:</span>
-                  {getBetIcon(bet.taker_bet)}
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    {getBetIcon(bet.taker_bet)}
+                  </div>
                 </div>
-
                 <div className="flex items-center mb-2">
                   <span className="mr-2">Opponent&apos;s Choice:</span>
-                  {getBetIcon(bet.decryptedMakerBet)}
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    {getBetIcon(bet.decryptedMakerBet)}
+                  </div>
                 </div>
                 <p className="text-sm text-gray-400">
                   Taken: {bet.bet_taking_timestamp ? new Date(bet.bet_taking_timestamp).toLocaleString() : 'N/A'}

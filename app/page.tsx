@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Navbar from './components/Navbar';
 import { createSolanaPotAddress } from './server/createPot';
 import { createRPSBet } from './server/createRPSBet';
+
 
 const HOUSE_ADDRESS = process.env.NEXT_PUBLIC_HOUSE_ADDRESS || '9BAa8bSQrUAT3nipra5bt3DJbW2Wyqfc2SXw3vGcjpbj';
 
@@ -117,11 +118,15 @@ export default function CreateRPSBet() {
                 <button
                   key={bet}
                   onClick={() => setSelectedBet(bet as 'Rock' | 'Paper' | 'Scissors')}
-                  className={`p-4 border rounded ${selectedBet === bet ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`p-4 border rounded ${selectedBet === bet ? 'bg-blue-500' : 'bg-gray-700'} transition-colors`}
                 >
-                  {bet === 'Rock' && <FaHandRock size={24} />}
-                  {bet === 'Paper' && <FaHandPaper size={24} />}
-                  {bet === 'Scissors' && <FaHandScissors size={24} />}
+                  <Image 
+                    src={`/${bet.toLowerCase()}.png`} 
+                    alt={bet} 
+                    width={60} 
+                    height={60}
+                    className={`transition-opacity ${selectedBet === bet ? 'opacity-100' : 'opacity-70'}`}
+                  />
                 </button>
               ))}
             </div>

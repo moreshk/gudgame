@@ -49,7 +49,7 @@ const Navbar = () => {
       </div>
       {isMenuOpen && (
         <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
-          <Link href="/create-rps-bet" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
+          <Link href="/" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
           <Link href="/open-rps-bets" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
           <div>
             <button 

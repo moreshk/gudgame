@@ -78,10 +78,31 @@ export default function RPSBetDetails() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
+      {/* <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">
-          Rock Paper Scissor Game Details
-        </h1>
+          Rock Paper Scissor Game Details 
+        </h1> */}
+        <main className="flex-grow container mx-auto px-4 py-8">
+      {/* <h1 className="text-3xl font-bold mb-8 text-center">
+        Rock Paper Scissor Game by {bet ? formatAddress(bet.bet_maker_address) : 'Loading...'}
+      </h1> */}
+       <h1 className="text-3xl font-bold mb-8 text-center">
+        {bet ? (
+          <>
+            <a
+              href={`https://solscan.io/account/${bet.bet_maker_address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300"
+            >
+              {formatAddress(bet.bet_maker_address)}
+            </a>{' '}
+            has started a game of Rock Paper Scissors
+          </>
+        ) : (
+          'Loading...'
+        )}
+      </h1>
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {isResolving && (
@@ -96,11 +117,13 @@ export default function RPSBetDetails() {
         )}
         {bet && !isResolving && (
           <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-4">Game #{bet.id}</h2>
+            {/* <h2 className="text-2xl font-semibold mb-4">Game #{bet.id}</h2> */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="font-semibold">Game Amount:</p>
-                <p>{bet.bet_amount} SOL</p>
+                {/* <p className="font-semibold">Game Amount:</p>
+                <p>{bet.bet_amount} SOL</p> */}
+                <p className="text-lg font-semibold mb-2">Game Amount: {Number(bet.bet_amount).toFixed(2)} SOL</p>
+
               </div>
               <div>
                 <p className="font-semibold">Pot Address:</p>
@@ -113,7 +136,7 @@ export default function RPSBetDetails() {
                   {formatAddress(bet.pot_address)}
                 </a>
               </div>
-              <div>
+              {/* <div>
                 <p className="font-semibold">Maker Address:</p>
                 <a
                   href={`https://solscan.io/account/${bet.bet_maker_address}`}
@@ -123,7 +146,7 @@ export default function RPSBetDetails() {
                 >
                   {formatAddress(bet.bet_maker_address)}
                 </a>
-              </div>
+              </div> */}
               {/* <div>
                 <p className="font-semibold">Bet Making Time:</p>
                 <p>{formatDate(bet.bet_making_timestamp)}</p>
@@ -184,14 +207,13 @@ export default function RPSBetDetails() {
                 </>
               )}
             </div>
-            {!bet.bet_taker_address && wallet.connected && (
-              <BetOptions
+            
+            <BetOptions
                 betId={bet.id}
                 betAmount={bet.bet_amount}
                 potAddress={bet.pot_address}
                 onBetPlaced={handleBetPlaced}
               />
-            )}
           </div>
         )}
       </main>
