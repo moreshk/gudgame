@@ -12,6 +12,7 @@ import {
 } from "@solana/web3.js";
 import { updateRPSBet } from "../server/updateRPSBets";
 import Image from "next/image";
+import { getRPSBetById } from "../server/getRPSBetById";
 
 interface BetOptionsProps {
   betId: number;
@@ -28,6 +29,7 @@ export default function BetOptions({
   onBetPlaced,
   isResolved,
 }: BetOptionsProps) {
+  const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<
@@ -66,8 +68,21 @@ export default function BetOptions({
     if (!wallet.publicKey || !wallet.signTransaction) return;
     setIsProcessing(true);
     setSelectedChoice(choice);
-
+    setError(null);
     try {
+
+      // Check if the bet is still available
+    const betStatus = await getRPSBetById(betId);
+    if (!betStatus.success) {
+      throw new Error(betStatus.error);
+    }
+    if (!betStatus.bet) {
+      throw new Error("Bet not found");
+    }
+    if (betStatus.bet.bet_taker_address !== null) {
+      throw new Error("This game has already been taken by another player.");
+    }
+
       const potPublicKey = new PublicKey(potAddress);
       const housePublicKey = new PublicKey(
         process.env.NEXT_PUBLIC_HOUSE_ADDRESS as string
@@ -126,6 +141,7 @@ export default function BetOptions({
       }
     } catch (error) {
       console.error("Error placing bet:", error);
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsProcessing(false);
       setIsConfirming(false);
@@ -159,6 +175,7 @@ export default function BetOptions({
 
   return (
     <div className="flex flex-col items-center mt-8">
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       <h3 className="text-lg font-semibold mb-4">Choose your move and see if you win!</h3>
       <div className="flex justify-center space-x-8 mb-4">
         <button
