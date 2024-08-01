@@ -16,7 +16,7 @@ const Navbar = () => {
   const { connected } = useWallet();
   const [mounted, setMounted] = useState(false);
   const [showMyBets, setShowMyBets] = useState(false);
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -40,24 +40,33 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="flex items-center space-x-4">
-        <Link href="/create-rps-bet" className="hover:text-gray-300">Create</Link>
-        <Link href="/open-rps-bets" className="hover:text-gray-300">Open Games</Link>
-        <div className="relative">
-          <button 
-            onClick={() => setShowMyBets(!showMyBets)}
-            className="hover:text-gray-300"
-          >
-            My Games
-          </button>
-          {showMyBets && (
-            <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg py-1">
-              <Link href="/made-bets" className="block px-4 py-2 text-sm hover:bg-gray-600">Made Games</Link>
-              <Link href="/taken-bets" className="block px-4 py-2 text-sm hover:bg-gray-600">Taken Games</Link>
-            </div>
-          )}
-        </div>
         <WalletMultiButtonDynamic className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" />
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
+      {isMenuOpen && (
+        <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
+          <Link href="/create-rps-bet" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
+          <Link href="/open-rps-bets" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
+          <div>
+            <button 
+              onClick={() => setShowMyBets(!showMyBets)}
+              className="w-full text-left py-2 px-4 hover:bg-gray-700"
+            >
+              My Games
+            </button>
+            {showMyBets && (
+              <div className="bg-gray-700">
+                <Link href="/made-bets" className="block py-2 px-8 hover:bg-gray-600">Made Games</Link>
+                <Link href="/taken-bets" className="block py-2 px-8 hover:bg-gray-600">Taken Games</Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
