@@ -79,8 +79,8 @@ export default function RPSBetDetails() {
 
   const shareOnTwitter = () => {
     if (bet) {
-      const formattedAmount = Number(bet.bet_amount).toFixed(2);
-      const tweetText = `I'm playing Rock Paper Scissors on-chain! Join me in this ${formattedAmount} SOL game: ${window.location.href}`;
+      const formattedAmount = Number(bet.bet_amount * 2).toFixed(2);
+      const tweetText = `Play me in Rock Paper Scissors! Winner gets ${formattedAmount} SOL - ${window.location.href}`;
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
       window.open(twitterUrl, '_blank');
     }
