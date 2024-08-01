@@ -4,6 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Dynamically import WalletMultiButton with ssr option set to false
 const WalletMultiButtonDynamic = dynamic(
@@ -27,7 +28,15 @@ const Navbar = () => {
 
   return (
     <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
-      <div className="text-xl font-bold">Pot Luck Fun</div>
+      <div className="flex items-center">
+        <Image 
+          src="/logo.png" 
+          alt="Pot Luck Fun Logo" 
+          width={60} 
+          height={60} 
+          className="object-contain"
+        />
+      </div>
       <div className="flex items-center space-x-4">
         <Link href="/create-rps-bet" className="hover:text-gray-300">Create</Link>
         <Link href="/open-rps-bets" className="hover:text-gray-300">Open Bets</Link>
