@@ -73,7 +73,7 @@ export default function TakenRPSBets() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">My Taken RPS Bets</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">Rock Paper Scissor Games I entered into</h1>
         {!publicKey && <p className="text-center">Please connect your wallet to view your taken bets.</p>}
         {isLoading && <p className="text-center">Loading your taken bets...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
