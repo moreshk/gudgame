@@ -5,6 +5,7 @@ import { getRPSBetById } from "./getRPSBetById";
 import { decryptPrivateKey } from "./decryptKey";
 import { transferSol } from "./transferSol";
 import { decryptBet } from "./decryptBet";
+import { setTimeout } from 'timers/promises';
 
 interface ResolveRPSBetResult {
   success: boolean;
@@ -13,22 +14,22 @@ interface ResolveRPSBetResult {
 }
 
 export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
-  console.log(`Starting to resolve RPS bet with ID: ${id}`);
+  console.log(`Starting to resolve RPS game with ID: ${id}`);
   try {
     // Get the bet details
-    console.log("Fetching bet details...");
+    console.log("Fetching game details...");
     const betResult = await getRPSBetById(id);
     if (!betResult.success || !betResult.bet) {
-      console.error("Failed to fetch bet details:", betResult.error);
-      throw new Error(betResult.error || "Failed to fetch bet details");
+      console.error("Failed to fetch game details:", betResult.error);
+      throw new Error(betResult.error || "Failed to fetch game details");
     }
     const bet = betResult.bet;
-    console.log("Bet details:", JSON.stringify(bet, null, 2));
+    console.log("Game details:", JSON.stringify(bet, null, 2));
 
     // Ensure the bet is ready to be resolved
     if (!bet.bet_taker_address || !bet.taker_bet) {
-      console.error("Bet is not ready to be resolved");
-      throw new Error("Bet is not ready to be resolved");
+      console.error("Game is not ready to be resolved");
+      throw new Error("Game is not ready to be resolved");
     }
 
     // Get the encrypted private key for the pot address
@@ -67,14 +68,14 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     }
 
     // Decrypt the maker's bet
-    console.log("Decrypting maker's bet...");
+    console.log("Decrypting maker's game...");
     let decryptedMakerBet;
     try {
       decryptedMakerBet = await decryptBet(bet.maker_bet);
-      console.log("Maker's bet decrypted successfully:", decryptedMakerBet);
+      console.log("Maker's game decrypted successfully:", decryptedMakerBet);
     } catch (decryptError) {
-      console.error("Error decrypting maker's bet:", decryptError);
-      throw new Error(`Failed to decrypt maker's bet: ${(decryptError as Error).message || "Unknown error"}`);
+      console.error("Error decrypting maker's game:", decryptError);
+      throw new Error(`Failed to decrypt maker's game: ${(decryptError as Error).message || "Unknown error"}`);
     }
 
     // Determine the winner
@@ -97,9 +98,14 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     }
     console.log(`Winner determined: ${winnerAddress}, Option: ${option}`);
 
-    // Transfer SOL
-    console.log("Initiating SOL transfer...");
-    const transferResult = await transferSol({
+    // Transfer SOL with retries
+  console.log("Initiating SOL transfer...");
+  const maxRetries = 3;
+  const retryDelay = 5000; // 5 seconds
+  let transferResult: { success: boolean; error?: string; signature?: string } = { success: false };
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    transferResult = await transferSol({
       publicKey: bet.pot_address,
       privateKey,
       destinationAddress1: bet.bet_maker_address,
@@ -107,33 +113,44 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
       option,
     });
 
-    if (!transferResult.success) {
-      console.error("Failed to transfer SOL:", transferResult.error);
-      throw new Error(transferResult.error || "Failed to transfer SOL");
+    if (transferResult.success) {
+      console.log(`SOL transfer successful on attempt ${attempt}`);
+      break;
+    } else {
+      console.warn(`SOL transfer failed on attempt ${attempt}:`, transferResult.error);
+      if (attempt < maxRetries) {
+        console.log(`Retrying in ${retryDelay / 1000} seconds...`);
+        await setTimeout(retryDelay);
+      }
     }
-    console.log("SOL transfer successful");
+  }
+
+  if (!transferResult.success) {
+    console.error("Failed to transfer SOL after all retry attempts:", transferResult.error);
+    throw new Error(transferResult.error || "Failed to transfer SOL after multiple attempts");
+  }
 
     // Update the bet record
-    console.log("Updating bet record...");
+    console.log("Updating game record...");
     await sql`
       UPDATE rock_paper_scissors_bets
       SET winner_address = ${winnerAddress},
           winnings_disbursement_signature = ${transferResult.signature}
       WHERE id = ${id};
     `;
-    console.log("Bet record updated successfully");
+    console.log("Game record updated successfully");
 
     return {
       success: true,
-      message: `Bet resolved successfully. Winner: ${
+      message: `Game resolved successfully. Winner: ${
         winnerAddress === "DRAW" ? "Draw" : winnerAddress
       }`,
     };
   } catch (error) {
-    console.error("Error resolving RPS bet:", error);
+    console.error("Error resolving RPS game:", error);
     return {
       success: false,
-      error: `Failed to resolve RPS bet: ${
+      error: `Failed to resolve RPS game: ${
         error instanceof Error ? error.message : "Unknown error"
       }`,
     };
