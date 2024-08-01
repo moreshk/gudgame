@@ -41,10 +41,15 @@ export default function BetOptions({
 
   const confirmTransaction = async (
     signature: string,
-    maxRetries = 5,
-    interval = 1000
+    maxRetries = 10,
+  interval = 5000,
+  timeout = 60000
   ) => {
+    const startTime = Date.now();
     for (let i = 0; i < maxRetries; i++) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error("Transaction confirmation timeout");
+      }
       const confirmation = await connection.getSignatureStatus(signature);
       if (
         confirmation.value?.confirmationStatus === "confirmed" ||
@@ -100,7 +105,7 @@ export default function BetOptions({
         }
       );
 
-      await confirmTransaction(txId);
+      await confirmTransaction(txId, 10, 5000, 120000);
 
       const updateResult = await updateRPSBet({
         id: betId,
