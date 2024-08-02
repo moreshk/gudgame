@@ -31,7 +31,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
       </head>
-      <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen`}>
+      {/* <body className={`${inter.className} bg-gray-900 light:bg-white text-white light:text-gray-900 min-h-screen`}> */}
+      <body className={`${inter.className} bg-gray-900 text-white min-h-screen`}>
         <Providers>{children}</Providers>
       </body>
     </html>
