@@ -32,6 +32,7 @@ export default function BetOptions({
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<
     "Rock" | "Paper" | "Scissors" | null
   >(null);
@@ -45,7 +46,7 @@ export default function BetOptions({
     signature: string,
     maxRetries = 10,
     interval = 5000,
-    timeout = 60000
+    timeout = 120000
   ) => {
     const startTime = Date.now();
     for (let i = 0; i < maxRetries; i++) {
@@ -70,18 +71,6 @@ export default function BetOptions({
     setSelectedChoice(choice);
     setError(null);
     try {
-
-      // Check if the bet is still available
-    const betStatus = await getRPSBetById(betId);
-    if (!betStatus.success) {
-      throw new Error(betStatus.error);
-    }
-    if (!betStatus.bet) {
-      throw new Error("Bet not found");
-    }
-    if (betStatus.bet.bet_taker_address !== null) {
-      throw new Error("This game has already been taken by another player.");
-    }
 
       const potPublicKey = new PublicKey(potAddress);
       const housePublicKey = new PublicKey(
@@ -155,7 +144,29 @@ export default function BetOptions({
       return;
     }
 
-    await placeBet(choice);
+    setIsCheckingStatus(true);
+    setError(null);
+
+    try {
+      // Check bet status before proceeding
+      const result = await getRPSBetById(betId);
+      if (result.success && result.bet) {
+        if (result.bet.bet_taker_address && result.bet.taker_bet) {
+          setError("This bet has already been taken. Please refresh the page.");
+          return;
+        }
+      } else {
+        throw new Error("Failed to fetch bet status");
+      }
+
+      // If we get here, the bet is still available
+      await placeBet(choice);
+    } catch (error) {
+      console.error("Error checking bet status:", error);
+      setError(error instanceof Error ? error.message : "An error occurred while checking bet status");
+    } finally {
+      setIsCheckingStatus(false);
+    }
   };
 
   const getButtonClass = (choice: "Rock" | "Paper" | "Scissors") => {
@@ -180,26 +191,29 @@ export default function BetOptions({
       <div className="flex justify-center space-x-8 mb-4">
         <button
           onClick={() => handleIconClick("Rock")}
-          disabled={isProcessing || isConfirming}
+          disabled={isProcessing || isConfirming || isCheckingStatus}
           className={getButtonClass("Rock")}
         >
           <Image src="/rock.png" alt="Rock" width={60} height={60} />
         </button>
         <button
           onClick={() => handleIconClick("Paper")}
-          disabled={isProcessing || isConfirming}
+          disabled={isProcessing || isConfirming || isCheckingStatus}
           className={getButtonClass("Paper")}
         >
           <Image src="/paper.png" alt="Paper" width={60} height={60} />
         </button>
         <button
           onClick={() => handleIconClick("Scissors")}
-          disabled={isProcessing || isConfirming}
+          disabled={isProcessing || isConfirming || isCheckingStatus}
           className={getButtonClass("Scissors")}
         >
           <Image src="/scissors.png" alt="Scissors" width={60} height={60} />
         </button>
       </div>
+      {isCheckingStatus && (
+        <p className="text-yellow-400">Checking bet status...</p>
+      )}
       {isProcessing && (
         <p className="text-yellow-400">
           Processing bet, please confirm the transaction in your wallet...
