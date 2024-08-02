@@ -43,6 +43,39 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
       throw new Error("Game is not ready to be resolved");
     }
 
+
+    // Decrypt the maker's bet
+    console.log("Decrypting maker's game...");
+    let decryptedMakerBet;
+    try {
+      decryptedMakerBet = await decryptBet(bet.maker_bet);
+      console.log("Maker's game decrypted successfully:", decryptedMakerBet);
+    } catch (decryptError) {
+      console.error("Error decrypting maker's game:", decryptError);
+      throw new Error(`Failed to decrypt maker's game: ${(decryptError as Error).message || "Unknown error"}`);
+    }
+
+    // Determine the winner
+    console.log("Determining the winner...");
+    let option: 1 | 2 | 3;
+    let winnerAddress: string;
+    if (decryptedMakerBet === bet.taker_bet) {
+      option = 3; // Draw
+      winnerAddress = "DRAW";
+    } else if (
+      (decryptedMakerBet === "Rock" && bet.taker_bet === "Scissors") ||
+      (decryptedMakerBet === "Paper" && bet.taker_bet === "Rock") ||
+      (decryptedMakerBet === "Scissors" && bet.taker_bet === "Paper")
+    ) {
+      option = 1; // Maker wins
+      winnerAddress = bet.bet_maker_address;
+    } else {
+      option = 2; // Taker wins
+      winnerAddress = bet.bet_taker_address;
+    }
+    console.log(`Winner determined: ${winnerAddress}, Option: ${option}`);
+
+    
     // Get the encrypted private key for the pot address
     console.log("Fetching pot address details...");
     const potResult = await sql`
@@ -76,37 +109,6 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
         }`
       );
     }
-
-    // Decrypt the maker's bet
-    console.log("Decrypting maker's game...");
-    let decryptedMakerBet;
-    try {
-      decryptedMakerBet = await decryptBet(bet.maker_bet);
-      console.log("Maker's game decrypted successfully:", decryptedMakerBet);
-    } catch (decryptError) {
-      console.error("Error decrypting maker's game:", decryptError);
-      throw new Error(`Failed to decrypt maker's game: ${(decryptError as Error).message || "Unknown error"}`);
-    }
-
-    // Determine the winner
-    console.log("Determining the winner...");
-    let option: 1 | 2 | 3;
-    let winnerAddress: string;
-    if (decryptedMakerBet === bet.taker_bet) {
-      option = 3; // Draw
-      winnerAddress = "DRAW";
-    } else if (
-      (decryptedMakerBet === "Rock" && bet.taker_bet === "Scissors") ||
-      (decryptedMakerBet === "Paper" && bet.taker_bet === "Rock") ||
-      (decryptedMakerBet === "Scissors" && bet.taker_bet === "Paper")
-    ) {
-      option = 1; // Maker wins
-      winnerAddress = bet.bet_maker_address;
-    } else {
-      option = 2; // Taker wins
-      winnerAddress = bet.bet_taker_address;
-    }
-    console.log(`Winner determined: ${winnerAddress}, Option: ${option}`);
 
     // Transfer SOL with retries
     console.log("Initiating SOL transfer...");

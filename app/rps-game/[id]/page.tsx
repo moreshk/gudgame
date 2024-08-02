@@ -35,27 +35,13 @@ export default function RPSBetDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [isResolving, setIsResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gameOutcome, setGameOutcome] = useState<string | null>(null);
+  const [isFundsPending, setIsFundsPending] = useState(false);
   const wallet = useWallet();
   const isResolved =
     bet?.winner_address !== null ||
     bet?.winnings_disbursement_signature !== null;
 
-  // const getResultMessage = () => {
-  //   if (!bet || !wallet.publicKey) return "";
-  //   if (bet.winner_address === "DRAW") return "It's a draw!";
-  //   if (bet.winner_address === wallet.publicKey.toBase58())
-  //     return "You won! 🎉";
-  //   return "You lost 😢";
-  // };
-
-  const getResultMessage = () => {
-    if (!bet || !wallet.publicKey) return "";
-    const amount = Number(bet.bet_amount);
-    if (bet.winner_address === "DRAW") return "It's a draw!";
-    if (bet.winner_address === wallet.publicKey.toBase58())
-      return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
-    return `You lost ${amount.toFixed(2)} SOL 😢`;
-  };
   useEffect(() => {
     async function fetchBet() {
       if (id) {
@@ -79,11 +65,18 @@ export default function RPSBetDetails() {
         if (result.success && result.bet) {
           setBet(result.bet);
           if (result.bet.bet_taker_address && result.bet.taker_bet) {
+            // Determine the winner immediately
+            const winner = determineWinner(result.bet.maker_bet, result.bet.taker_bet);
+            setGameOutcome(winner);
+            setIsFundsPending(true);
+
+            // Resolve the bet and update the database
             const resolveResult = await resolveRPSBet(Number(id));
             if (resolveResult && resolveResult.success) {
               const updatedResult = await getRPSBetById(Number(id));
               if (updatedResult.success && updatedResult.bet) {
                 setBet(updatedResult.bet);
+                setIsFundsPending(false);
               } else {
                 throw new Error(updatedResult.error || "Failed to fetch updated bet");
               }
@@ -101,6 +94,28 @@ export default function RPSBetDetails() {
         setIsResolving(false);
       }
     }
+  };
+
+  const determineWinner = (makerBet: string, takerBet: string): string => {
+    if (makerBet === takerBet) return "DRAW";
+    if (
+      (makerBet === "Rock" && takerBet === "Scissors") ||
+      (makerBet === "Paper" && takerBet === "Rock") ||
+      (makerBet === "Scissors" && takerBet === "Paper")
+    ) {
+      return bet?.bet_maker_address || "";
+    }
+    return bet?.bet_taker_address || "";
+  };
+
+  const getResultMessage = () => {
+    if (!bet || !wallet.publicKey) return "";
+    const amount = Number(bet.bet_amount);
+    const winnerAddress = gameOutcome || bet.winner_address;
+    if (winnerAddress === "DRAW") return "It's a draw!";
+    if (winnerAddress === wallet.publicKey.toBase58())
+      return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
+    return `You lost ${amount.toFixed(2)} SOL 😢`;
   };
 
   const formatAddress = (address: string) =>
@@ -136,19 +151,12 @@ export default function RPSBetDetails() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 text-white">
       <Navbar />
-      {/* <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">
-          Rock Paper Scissor Game Details 
-        </h1> */}
       <main className="flex-grow container mx-auto px-4 py-8">
-        {/* <h1 className="text-3xl font-bold mb-8 text-center">
-        Rock Paper Scissor Game by {bet ? formatAddress(bet.bet_maker_address) : 'Loading...'}
-      </h1> */}
         <h1 className="text-3xl font-bold mb-8 text-center">
           {isLoading ? (
             "Loading..."
           ) : bet ? (
-            isResolved ? (
+            gameOutcome || isResolved ? (
               getResultMessage()
             ) : (
               <>
@@ -169,30 +177,34 @@ export default function RPSBetDetails() {
         </h1>
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
-        {isResolving && (
-  <div className="text-center">
-    <p className="mb-4">Game resolving, please wait...</p>
-    <div className="flex justify-center">
-  <Image src="/loading.gif" alt="Loading" width={180} height={180} />
-</div>
-  </div>
-)}
+        {isResolving && !gameOutcome && (
+          <div className="text-center">
+            <p className="mb-4">Game resolving, please wait...</p>
+            <div className="flex justify-center">
+              <Image src="/loading.gif" alt="Loading" width={180} height={180} />
+            </div>
+          </div>
+        )}
+        {isFundsPending && (
+          <div className="text-center mt-4">
+            <p>Game resolved! Funds are on their way...</p>
+          </div>
+        )}
         {bet && !isResolving && (
           <>
             <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-              {/* <h2 className="text-2xl font-semibold mb-4">Game #{bet.id}</h2> */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-              <p className="font-semibold mb-2">
-                Game Amount: {isResolved 
-                  ? (bet.winner_address === "DRAW" 
-                    ? Number(bet.bet_amount).toFixed(2) 
-                    : (bet.winner_address === wallet.publicKey?.toBase58() 
-                      ? (Number(bet.bet_amount) * 2).toFixed(2) 
-                      : Number(bet.bet_amount).toFixed(2)))
-                  : Number(bet.bet_amount).toFixed(2)} SOL
-              </p>
-            </div>
+                <div>
+                  <p className="font-semibold mb-2">
+                    Game Amount: {isResolved 
+                      ? (bet.winner_address === "DRAW" 
+                        ? Number(bet.bet_amount).toFixed(2) 
+                        : (bet.winner_address === wallet.publicKey?.toBase58() 
+                          ? (Number(bet.bet_amount) * 2).toFixed(2) 
+                          : Number(bet.bet_amount).toFixed(2)))
+                      : Number(bet.bet_amount).toFixed(2)} SOL
+                  </p>
+                </div>
                 <div>
                   <p className="font-semibold flex items-center justify-start md:justify-end">
                     <span className="mr-2">Pot Address:</span>
@@ -207,17 +219,17 @@ export default function RPSBetDetails() {
                   </p>
                 </div>
 
-                {bet.winner_address && (
+                {(bet.winner_address || gameOutcome) && (
                   <>
                     <div>
                       <p className="font-semibold">Winner:</p>
                       <a
-                        href={`https://solscan.io/account/${bet.winner_address}`}
+                        href={`https://solscan.io/account/${bet.winner_address || gameOutcome}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 break-all"
                       >
-                        {formatAddress(bet.winner_address)}
+                        {formatAddress(bet.winner_address || gameOutcome || '')}
                       </a>
                     </div>
                     {bet.winnings_disbursement_signature && (
@@ -237,14 +249,14 @@ export default function RPSBetDetails() {
                 )}
               </div>
 
-              {!isResolved && ( // Only render BetOptions if the bet is not resolved
+              {!isResolved && !gameOutcome && (
                 <>
                   <BetOptions
                     betId={bet.id}
                     betAmount={bet.bet_amount}
                     potAddress={bet.pot_address}
                     onBetPlaced={handleBetPlaced}
-                    isResolved={isResolved} // Pass the new prop
+                    isResolved={isResolved}
                   />
                   <p className="mt-4 text-center text-sm text-gray-400">
                     Choose your move and match the game amount. Whoever wins
@@ -256,19 +268,15 @@ export default function RPSBetDetails() {
               )}
             </div>
 
-            {bet && !isResolving && (
-              <>
-                <div className="mt-6 text-center space-y-4">
-                  {isResolved && (
-                    <Link
-                      href="/"
-                      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-block"
-                    >
-                      Start New Game
-                    </Link>
-                  )}
-                </div>
-              </>
+            {(isResolved || gameOutcome) && (
+              <div className="mt-6 text-center space-y-4">
+                <Link
+                  href="/"
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-block"
+                >
+                  Start New Game
+                </Link>
+              </div>
             )}
 
             <div className="mt-6 text-center">
