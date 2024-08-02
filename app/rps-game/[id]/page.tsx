@@ -147,7 +147,8 @@ export default function RPSBetDetails() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+    
+      <div className="min-h-screen flex flex-col text-white">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">
