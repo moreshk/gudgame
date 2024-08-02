@@ -117,7 +117,7 @@ export default function CreateRPSBet() {
                 className="w-full p-2 border rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 step="0.01"
                 min="0.1"
-                placeholder="Enter amount (min 0.1 SOL)"
+                placeholder="Enter amount (min 0.01 SOL)"
               />
             </div>
             <label htmlFor="amount" className="block mb-2">Pick your move:</label>

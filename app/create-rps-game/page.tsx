@@ -26,7 +26,7 @@ export default function CreateRPSBet() {
 
     // Validate minimum bet amount
     if (parseFloat(amount) < 0.1) {
-      setErrorMessage('Minimum game amount is 0.1 SOL');
+      setErrorMessage('Minimum game amount is 0.01 SOL');
       return;
     }
 
@@ -134,7 +134,7 @@ export default function CreateRPSBet() {
                 className="w-full p-2 border rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 step="0.01"
                 min="0.1"
-                placeholder="Enter amount (min 0.1 SOL)"
+                placeholder="Enter amount (min 0.01 SOL)"
               />
             </div>
             <div className="flex justify-between mb-4">
