@@ -220,9 +220,14 @@ export default function BetOptions({
         </p>
       )}
       {isConfirming && (
+        <>
         <p className="text-yellow-400">
           Transaction signed. Waiting for confirmation on the blockchain...
         </p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <Image src="/loading.gif" alt="Loading" width={100} height={100} />
+      </div>
+      </>
       )}
       {!wallet.connected && (
         <p className="text-sm text-gray-400 mt-2">
