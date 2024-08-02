@@ -162,8 +162,8 @@ export default function BetOptions({
       // If we get here, the bet is still available
       await placeBet(choice);
     } catch (error) {
-      console.error("Error checking bet status:", error);
-      setError(error instanceof Error ? error.message : "An error occurred while checking bet status");
+      console.error("Error checking game status:", error);
+      setError(error instanceof Error ? error.message : "An error occurred while checking game status");
     } finally {
       setIsCheckingStatus(false);
     }
@@ -187,7 +187,8 @@ export default function BetOptions({
   return (
     <div className="flex flex-col items-center mt-8">
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <h3 className="text-lg font-semibold mb-4">Choose your move and see if you win!</h3>
+      {/* <h3 className="text-lg font-semibold mb-4">Choose your move and see if you win!</h3> */}
+      <h3 className="text-lg font-semibold mb-4 text-center sm:text-left">Choose your move and see if you win!</h3>
       <div className="flex justify-center space-x-8 mb-4">
         <button
           onClick={() => handleIconClick("Rock")}
@@ -212,7 +213,7 @@ export default function BetOptions({
         </button>
       </div>
       {isCheckingStatus && (
-        <p className="text-yellow-400">Checking bet status...</p>
+        <p className="text-yellow-400">Checking game status...</p>
       )}
       {isProcessing && (
         <p className="text-yellow-400">
