@@ -27,7 +27,8 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
+    // <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
+     <nav className="flex justify-between items-center p-4 text-white">
       <div className="flex items-center">
         <Link href="/">
           <Image 
@@ -48,7 +49,8 @@ const Navbar = () => {
         </button>
       </div>
       {isMenuOpen && (
-        <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
+        // <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
+                  <div className="absolute top-16 right-0 w-64 bg-gray-900 rounded-md shadow-lg py-1">
           <Link href="/" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
           <Link href="/open-rps-games" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
           <div>
@@ -59,7 +61,7 @@ const Navbar = () => {
               My Games
             </button>
             {showMyBets && (
-              <div className="bg-gray-700">
+              <div className="bg-gray-800">
                 <Link href="/made-games" className="block py-2 px-8 hover:bg-gray-600">Made Games</Link>
                 <Link href="/taken-games" className="block py-2 px-8 hover:bg-gray-600">Taken Games</Link>
               </div>

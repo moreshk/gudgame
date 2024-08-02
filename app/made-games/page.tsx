@@ -7,7 +7,11 @@ import Navbar from '../components/Navbar';
 import { getRPSBetsByMaker } from '../server/getRPSBetsByMaker';
 import { decryptBet } from '../server/decryptBet';
 import Link from 'next/link';
-
+import { Press_Start_2P } from 'next/font/google';
+const pressStart2P = Press_Start_2P({ 
+  weight: '400',
+  subsets: ['latin'],
+});
 
 interface RPSBet {
   id: number;
@@ -70,7 +74,15 @@ export default function MyRPSBets() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Games Created</h1>
+        {/* <h1 className="text-3xl font-bold mb-8 text-center">Games Created</h1> */}
+
+        <h1
+          className={`text-2xl font-bold mb-4 text-center text-[#f13992] ${pressStart2P.className}`}
+        >
+          Games Created
+        </h1>
+
+
         {!publicKey && <p className="text-center">Please connect your wallet to view your games.</p>}
         {isLoading && <p className="text-center">Loading your games...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}

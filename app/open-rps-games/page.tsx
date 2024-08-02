@@ -1,10 +1,15 @@
-'use client';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import Navbar from '../components/Navbar';
-import { getOpenRPSBets } from '../server/getOpenRPSBets';
-import RPSBetCard from '../components/RPSBetCard';
+"use client";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import Navbar from "../components/Navbar";
+import { getOpenRPSBets } from "../server/getOpenRPSBets";
+import RPSBetCard from "../components/RPSBetCard";
+import { Press_Start_2P } from "next/font/google";
+const pressStart2P = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 interface OpenRPSBet {
   id: number;
@@ -31,7 +36,7 @@ export default function OpenRPSBets() {
     if (result.success) {
       setOpenBets(result.bets ?? []);
     } else {
-      setError(result.error || 'Failed to fetch open bets');
+      setError(result.error || "Failed to fetch open bets");
     }
     setIsLoading(false);
   }
@@ -44,7 +49,11 @@ export default function OpenRPSBets() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Open Games</h1>
+        <h1
+          className={`text-2xl font-bold mb-4 text-center text-[#f13992] ${pressStart2P.className}`}
+        >
+          Open Games
+        </h1>
         {isLoading && <p className="text-center">Loading Live Games...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
