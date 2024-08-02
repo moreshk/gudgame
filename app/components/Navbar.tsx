@@ -32,8 +32,8 @@ const Navbar = () => {
       <div className="flex items-center">
         <Link href="/">
           <Image 
-            src="/logo.png" 
-            alt="Pot Luck Fun Logo" 
+            src="/logo-beta.png" 
+            alt="Gud Game" 
             width={60} 
             height={60} 
             className="object-contain"
