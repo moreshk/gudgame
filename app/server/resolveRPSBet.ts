@@ -11,6 +11,8 @@ interface ResolveRPSBetResult {
   success: boolean;
   message?: string;
   error?: string;
+  winner?: string;
+  option?: 1 | 2 | 3;
 }
 
 export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
@@ -34,6 +36,7 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
         message: `Game was already resolved. Winner: ${
           bet.winner_address === "DRAW" ? "Draw" : bet.winner_address
         }`,
+        winner: bet.winner_address,
       };
     }
 
@@ -42,7 +45,6 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
       console.error("Game is not ready to be resolved");
       throw new Error("Game is not ready to be resolved");
     }
-
 
     // Decrypt the maker's bet
     console.log("Decrypting maker's game...");
@@ -75,7 +77,32 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     }
     console.log(`Winner determined: ${winnerAddress}, Option: ${option}`);
 
-    
+    return {
+      success: true,
+      message: `Winner determined: ${winnerAddress === "DRAW" ? "Draw" : winnerAddress}`,
+      winner: winnerAddress,
+      option: option
+    };
+
+  } catch (error) {
+    console.error("Error resolving RPS game:", error);
+    return {
+      success: false,
+      error: `Failed to resolve RPS game: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    };
+  }
+}
+
+export async function completeRPSBetResolution(id: number, winnerAddress: string, option: 1 | 2 | 3): Promise<ResolveRPSBetResult> {
+  try {
+    const betResult = await getRPSBetById(id);
+    if (!betResult.success || !betResult.bet) {
+      throw new Error(betResult.error || "Failed to fetch game details");
+    }
+    const bet = betResult.bet;
+
     // Get the encrypted private key for the pot address
     console.log("Fetching pot address details...");
     const potResult = await sql`
@@ -159,10 +186,10 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
       }`,
     };
   } catch (error) {
-    console.error("Error resolving RPS game:", error);
+    console.error("Error completing RPS game resolution:", error);
     return {
       success: false,
-      error: `Failed to resolve RPS game: ${
+      error: `Failed to complete RPS game resolution: ${
         error instanceof Error ? error.message : "Unknown error"
       }`,
     };

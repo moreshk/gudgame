@@ -1,17 +1,15 @@
 "use client";
-// dummy
+
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Navbar from "../../components/Navbar";
 import { getRPSBetById } from "../../server/getRPSBetById";
-import { resolveRPSBet } from "../../server/resolveRPSBet";
+import { resolveRPSBet, completeRPSBetResolution } from "../../server/resolveRPSBet";
 import BetOptions from "../../components/BetOptions";
-import { FaHandRock, FaHandPaper, FaHandScissors } from "react-icons/fa";
-import { FaTwitter } from "react-icons/fa"; // Add this import
-import Image from 'next/image'; // Add this import at the top of the file
-
-import Link from "next/link"; // Add this import at the top of the file
+import { FaHandRock, FaHandPaper, FaHandScissors, FaTwitter } from "react-icons/fa";
+import Image from 'next/image';
+import Link from "next/link";
 
 interface RPSBet {
   id: number;
@@ -37,6 +35,7 @@ export default function RPSBetDetails() {
   const [error, setError] = useState<string | null>(null);
   const [gameOutcome, setGameOutcome] = useState<string | null>(null);
   const [isFundsPending, setIsFundsPending] = useState(false);
+  const [isFundsTransferring, setIsFundsTransferring] = useState(false);
   const wallet = useWallet();
   const isResolved =
     bet?.winner_address !== null ||
@@ -65,21 +64,22 @@ export default function RPSBetDetails() {
         if (result.success && result.bet) {
           setBet(result.bet);
           if (result.bet.bet_taker_address && result.bet.taker_bet) {
-            // Determine the winner immediately
-            const winner = determineWinner(result.bet.maker_bet, result.bet.taker_bet);
-            setGameOutcome(winner);
-            setIsFundsPending(true);
-
-            // Resolve the bet and update the database
+            // Resolve the bet and get the winner immediately
             const resolveResult = await resolveRPSBet(Number(id));
-            if (resolveResult && resolveResult.success) {
-              const updatedResult = await getRPSBetById(Number(id));
-              if (updatedResult.success && updatedResult.bet) {
-                setBet(updatedResult.bet);
-                setIsFundsPending(false);
-              } else {
-                throw new Error(updatedResult.error || "Failed to fetch updated bet");
+            if (resolveResult && resolveResult.success && resolveResult.winner) {
+              setGameOutcome(resolveResult.winner);
+              setIsResolving(false);
+              setIsFundsTransferring(true);
+
+              // Continue with the fund transfer and database update in the background
+              const finalResult = await completeRPSBetResolution(Number(id), resolveResult.winner, resolveResult.option!);
+              if (finalResult.success) {
+                const updatedResult = await getRPSBetById(Number(id));
+                if (updatedResult.success && updatedResult.bet) {
+                  setBet(updatedResult.bet);
+                }
               }
+              setIsFundsTransferring(false);
             } else {
               throw new Error(resolveResult?.error || "Failed to resolve bet");
             }
@@ -90,22 +90,20 @@ export default function RPSBetDetails() {
       } catch (error) {
         console.error("Error handling bet placement:", error);
         setError(error instanceof Error ? error.message : "An unknown error occurred");
-      } finally {
         setIsResolving(false);
+        setIsFundsTransferring(false);
       }
     }
   };
 
-  const determineWinner = (makerBet: string, takerBet: string): string => {
-    if (makerBet === takerBet) return "DRAW";
-    if (
-      (makerBet === "Rock" && takerBet === "Scissors") ||
-      (makerBet === "Paper" && takerBet === "Rock") ||
-      (makerBet === "Scissors" && takerBet === "Paper")
-    ) {
-      return bet?.bet_maker_address || "";
-    }
-    return bet?.bet_taker_address || "";
+  const getOutcomeMessage = () => {
+    if (!bet || !wallet.publicKey) return "";
+    const amount = Number(bet.bet_amount);
+    const winnerAddress = gameOutcome || bet.winner_address;
+    if (winnerAddress === "DRAW") return "It's a draw!";
+    if (winnerAddress === wallet.publicKey.toBase58())
+      return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
+    return `You lost ${amount.toFixed(2)} SOL 😢`;
   };
 
   const getResultMessage = () => {
@@ -177,6 +175,8 @@ export default function RPSBetDetails() {
         </h1>
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
+        
+        
         {isResolving && !gameOutcome && (
           <div className="text-center">
             <p className="mb-4">Game resolving, please wait...</p>
@@ -185,11 +185,14 @@ export default function RPSBetDetails() {
             </div>
           </div>
         )}
-        {isFundsPending && (
+        {gameOutcome && (
           <div className="text-center mt-4">
-            <p>Game resolved! Funds are on their way...</p>
+            <p>{getOutcomeMessage()}</p>
+            {isFundsTransferring && <p>Funds are being transferred...</p>}
           </div>
         )}
+
+
         {bet && !isResolving && (
           <>
             <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
