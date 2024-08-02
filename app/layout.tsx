@@ -9,12 +9,15 @@ const pressStart2P = Press_Start_2P({
   subsets: ['latin'],
 });
 
-
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Pot Luck Fun',
-  description: 'A Solana wallet connection app',
+  title: 'Gud Game - Rock Paper Scissors on Solana',
+  description: 'Play Rock Paper Scissors on the Solana blockchain and win SOL!',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({
@@ -24,6 +27,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
+      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
