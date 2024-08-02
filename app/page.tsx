@@ -98,6 +98,11 @@ export default function CreateRPSBet() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow flex flex-col items-center justify-center p-4">
+      {isCreating && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Image src="/loading.gif" alt="Loading" width={100} height={100} />
+          </div>
+        )}
         {wallet.publicKey ? (
           <div className="w-full max-w-md">
             {/* <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1> */}
