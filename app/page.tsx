@@ -29,8 +29,8 @@ export default function CreateRPSBet() {
     if (!wallet.publicKey || !connection || !selectedBet || !amount) return;
 
     // Validate minimum bet amount
-    if (parseFloat(amount) < 0.1) {
-      setErrorMessage('Minimum bet amount is 0.1 SOL');
+    if (parseFloat(amount) < 0.01) {
+      setErrorMessage('Minimum bet amount is 0.01 SOL');
       return;
     }
 
