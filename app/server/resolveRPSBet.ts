@@ -144,6 +144,9 @@ export async function completeRPSBetResolution(id: number, winnerAddress: string
     let transferResult: { success: boolean; error?: string; signature?: string } = { success: false };
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      if (!bet.bet_maker_address || !bet.bet_taker_address) {
+        throw new Error("Maker or taker address is missing");
+      }
       transferResult = await transferSol({
         publicKey: bet.pot_address,
         privateKey,
