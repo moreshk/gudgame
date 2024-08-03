@@ -9,6 +9,7 @@ import {
   LedgerWalletAdapter,
   TorusWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
+import { TipLinkWalletAdapter } from '@tiplink/wallet-adapter';
 import { ReactNode, useMemo } from 'react';
 
 // Import wallet adapter CSS
@@ -52,6 +53,11 @@ export function Providers({ children }: { children: ReactNode }) {
     new SolflareWalletAdapter(),
     new LedgerWalletAdapter(),
     new TorusWalletAdapter(),
+    new TipLinkWalletAdapter({
+      clientId: 'dc190215-a27f-448a-9a6d-72053335bf6a',
+      title: 'TipLink',
+      theme: 'light'
+    }),
   ], []);
 
   return (
