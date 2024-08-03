@@ -53,6 +53,7 @@ const Navbar = () => {
                   <div className="absolute top-16 right-0 w-64 bg-gray-900 rounded-md shadow-lg py-1">
           <Link href="/" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
           <Link href="/open-rps-games" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
+
           <div>
             <button 
               onClick={() => setShowMyBets(!showMyBets)}
@@ -67,6 +68,8 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
+          <Link href="/leaderboard" className="block py-2 px-4 hover:bg-gray-700">Leaderboard</Link>
         </div>
       )}
     </nav>
