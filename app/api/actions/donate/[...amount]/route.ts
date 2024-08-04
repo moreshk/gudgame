@@ -42,7 +42,7 @@ import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.
       const body: ActionPostRequest = await req.json();
       const { account } = body;
       const url = new URL(req.url);
-      const amount = parseFloat(url.searchParams.get('amount') || '0') * 1e9; // Convert SOL to lamports
+      const amount = parseFloat(url.pathname.split('/').pop() || '0') * 1e9; // Convert SOL to lamports
   
       const connection = new Connection("https://api.mainnet-beta.solana.com");
       const transaction = new Transaction().add(
@@ -76,10 +76,4 @@ import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.
         },
       });
     }
-  }
-  
-  export async function OPTIONS(req: Request) {
-    return new Response(null, {
-      headers: ACTIONS_CORS_HEADERS,
-    });
   }
