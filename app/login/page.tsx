@@ -23,7 +23,7 @@ const Login: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <div className="w-full max-w-md p-6 bg-gray-800 rounded-lg shadow-md">
-        <h1 className="mb-6 text-2xl font-bold text-center text-gray-100">Login</h1>
+        <h1 className="mb-6 text-2xl font-bold text-center text-gray-100">Login to Access Beta</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="password"
@@ -38,6 +38,7 @@ const Login: React.FC = () => {
           >
             Submit
           </button>
+          <p className="text-sm text-center text-gray-400">Reach out to @unreadyplayer on TG for access</p>
           {error && <p className="text-sm text-center text-red-400">{error}</p>}
         </form>
       </div>
