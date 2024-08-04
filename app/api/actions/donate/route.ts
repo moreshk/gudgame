@@ -9,57 +9,49 @@ import {
   
   const RECIPIENT_ADDRESS = "9wPKJm8rVXURCRJKEVJqLXW4PZSvLTUXb48t3Fn4Yvyh";
   
-  export const GET = async (req: Request) => {
-    const payload: ActionGetResponse = {
-      title: "Donate SOL",
-      icon: "https://cryptologos.cc/logos/solana-sol-logo.png",
-      description: "Donate SOL to support our project",
-      label: "Donate",
-      links: {
-        actions: [
-          {
-            href: "/api/actions/donate/{amount}",
-            label: "Donate",
-            parameters: [
-              {
-                name: "amount",
-                label: "Enter SOL amount",
-              },
-            ],
-          },
-        ],
-      },
-    };
+  export async function POST(req: Request) {
+    try {
+      const body: ActionPostRequest = await req.json();
+      const { account } = body;
+      const url = new URL(req.url);
+      const amount = parseFloat(url.searchParams.get('amount') || '0') * 1e9; // Convert SOL to lamports
   
-    return Response.json(payload, {
-      headers: ACTIONS_CORS_HEADERS,
-    });
-  };
+      const connection = new Connection("https://api.mainnet-beta.solana.com");
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(account),
+          toPubkey: new PublicKey(RECIPIENT_ADDRESS),
+          lamports: amount,
+        })
+      );
   
-  export const POST = async (req: Request) => {
-    const body: ActionPostRequest = await req.json();
-    const { account } = body;
-    const amount = parseFloat(req.url.split("amount=")[1]) * 1e9; // Convert SOL to lamports
-  
-    const connection = new Connection(process.env.NEXT_PUBLIC_RPC_ENDPOINT ?? 'https://api.mainnet-beta.solana.com');
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(account),
-        toPubkey: new PublicKey(RECIPIENT_ADDRESS),
-        lamports: amount,
-      })
-    );
-  
-    const payload: ActionPostResponse = await createPostResponse({
+      const payload: ActionPostResponse = await createPostResponse({
         fields: {
             transaction: transaction,
             message: `Donating ${amount / 1e9} SOL`,
         },
     });
   
-    return Response.json(payload, {
+      return new Response(JSON.stringify(payload), {
+        headers: {
+          ...ACTIONS_CORS_HEADERS,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Error in POST handler:', error);
+      return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+        status: 500,
+        headers: {
+          ...ACTIONS_CORS_HEADERS,
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+  }
+  
+  export async function OPTIONS(req: Request) {
+    return new Response(null, {
       headers: ACTIONS_CORS_HEADERS,
     });
-  };
-  
-  export const OPTIONS = GET;
+  }
