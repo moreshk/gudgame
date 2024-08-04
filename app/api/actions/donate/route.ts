@@ -1,14 +1,42 @@
 import {
-    ActionPostResponse,
-    ACTIONS_CORS_HEADERS,
-    createPostResponse,
-    ActionGetResponse,
-    ActionPostRequest,
-  } from "@solana/actions";
-  import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-  
+  ActionPostResponse,
+  ACTIONS_CORS_HEADERS,
+  createPostResponse,
+  ActionGetResponse,
+  ActionPostRequest,
+} from "@solana/actions";
+import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+
   const RECIPIENT_ADDRESS = "9wPKJm8rVXURCRJKEVJqLXW4PZSvLTUXb48t3Fn4Yvyh";
   
+  export async function GET(req: Request) {
+    const payload: ActionGetResponse = {
+      title: "Donate SOL",
+      icon: "https://cryptologos.cc/logos/solana-sol-logo.png",
+      description: "Donate SOL to support our project",
+      label: "Donate",
+      links: {
+        actions: [
+          {
+            href: "/api/actions/donate/{amount}",
+            label: "Donate",
+            parameters: [
+              {
+                name: "amount",
+                label: "Enter SOL amount",
+              },
+            ],
+          },
+        ],
+      },
+    };
+    return new Response(JSON.stringify(payload), {
+      headers: {
+        ...ACTIONS_CORS_HEADERS,
+        'Content-Type': 'application/json',
+      },
+    });
+  }
   export async function POST(req: Request) {
     try {
       const body: ActionPostRequest = await req.json();
