@@ -70,12 +70,12 @@ export default function BetsByAddress({ address }: BetsByAddressProps) {
       >
         <Link href={`https://solscan.io/account/${address}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
           {shortenAddress(address)}
-        </Link> moves
+        </Link> past moves
       </h1>
       {isLoading && <p className="text-center">Loading bets...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       {bets.length === 0 && !isLoading && (
-        <p className="text-center">No recent bets found.</p>
+        <p className="text-center">No recent moves found.</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {bets.map((bet) => (
@@ -83,8 +83,8 @@ export default function BetsByAddress({ address }: BetsByAddressProps) {
             <Image 
               src={getBetImage(bet.is_maker ? bet.maker_bet : (bet.taker_bet ?? 'unknown'))}
               alt={bet.is_maker ? bet.maker_bet : (bet.taker_bet ?? 'unknown')}
-              width={100}
-              height={100}
+              width={50}
+              height={50}
             />
             <p className="mt-2 text-center">{bet.is_maker ? bet.maker_bet : bet.taker_bet}</p>
           </div>
