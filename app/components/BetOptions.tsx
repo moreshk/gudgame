@@ -188,28 +188,28 @@ export default function BetOptions({
     <div className="flex flex-col items-center mt-8">
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {/* <h3 className="text-lg font-semibold mb-4">Choose your move and see if you win!</h3> */}
-      <h3 className="text-lg font-semibold mb-4 text-center sm:text-left">Choose your move and see if you win!</h3>
+      <h1 className="text-lg font-semibold mb-4 text-center sm:text-left">Choose your move and see if you win!</h1>
       <div className="flex justify-center space-x-8 mb-4">
         <button
           onClick={() => handleIconClick("Rock")}
           disabled={isProcessing || isConfirming || isCheckingStatus}
           className={getButtonClass("Rock")}
         >
-          <Image src="/rock.png" alt="Rock" width={60} height={60} />
+          <Image src="/rock.png" alt="Rock" width={90} height={90} />
         </button>
         <button
           onClick={() => handleIconClick("Paper")}
           disabled={isProcessing || isConfirming || isCheckingStatus}
           className={getButtonClass("Paper")}
         >
-          <Image src="/paper.png" alt="Paper" width={60} height={60} />
+          <Image src="/paper.png" alt="Paper" width={90} height={90} />
         </button>
         <button
           onClick={() => handleIconClick("Scissors")}
           disabled={isProcessing || isConfirming || isCheckingStatus}
           className={getButtonClass("Scissors")}
         >
-          <Image src="/scissors.png" alt="Scissors" width={60} height={60} />
+          <Image src="/scissors.png" alt="Scissors" width={90} height={90} />
         </button>
       </div>
       {isCheckingStatus && (
