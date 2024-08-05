@@ -19,6 +19,16 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { decryptBet } from "../../server/decryptBet";
+import BetsByAddress from "../../components/BetsByAddress";
+
+import { Press_Start_2P } from 'next/font/google';
+
+const pressStart2P = Press_Start_2P({ 
+  weight: '400',
+  subsets: ['latin'],
+});
+
+
 
 interface RPSBet {
   id: number;
@@ -200,29 +210,29 @@ export default function RPSBetDetails() {
     <div className="min-h-screen flex flex-col text-white">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">
-          {isLoading ? (
-            "Loading..."
-          ) : bet ? (
-            gameOutcome || isResolved ? (
-              getResultMessage()
-            ) : (
-              <>
-                <a
-                  href={`https://solscan.io/account/${bet.bet_maker_address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300"
-                >
-                  {formatAddress(bet.bet_maker_address)}
-                </a>{" "}
-                has started a game of Rock Paper Scissors
-              </>
-            )
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center">
+        {isLoading ? (
+          "Loading..."
+        ) : bet ? (
+          gameOutcome || isResolved ? (
+            getResultMessage()
           ) : (
-            "Game not found"
-          )}
-        </h1>
+            <span className={`${pressStart2P.className} text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed`}>
+              <a
+                href={`https://solscan.io/account/${bet.bet_maker_address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 break-all"
+              >
+                {formatAddress(bet.bet_maker_address)}
+              </a>{" "}
+              has started a game of Rock Paper Scissors
+            </span>
+          )
+        ) : (
+          "Game not found"
+        )}
+      </h1>
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
@@ -342,6 +352,10 @@ export default function RPSBetDetails() {
                     Winnings are automatically sent to the winning wallet
                     address.
                   </p>
+                  <div className="my-8"> {/* Added spacing */}
+      <BetsByAddress address={bet.bet_maker_address} />
+    </div>
+                  {/* <BetsByAddress address={bet.bet_maker_address} /> */}
                 </>
               )}
 </div>
