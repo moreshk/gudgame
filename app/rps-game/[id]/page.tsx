@@ -326,6 +326,24 @@ export default function RPSBetDetails() {
       </div>
     </div>
   )}
+
+{!isResolved && !gameOutcome && (
+                <>
+                  <BetOptions
+                    betId={bet.id}
+                    betAmount={bet.bet_amount}
+                    potAddress={bet.pot_address}
+                    onBetPlaced={handleBetPlaced}
+                    isResolved={isResolved}
+                  />
+                  <p className="mt-4 text-center text-sm text-gray-400">
+                    Choose your move and match the game amount. Whoever wins
+                    gets the pot! <br />
+                    Winnings are automatically sent to the winning wallet
+                    address.
+                  </p>
+                </>
+              )}
 </div>
 
             {(isResolved || gameOutcome) && (
