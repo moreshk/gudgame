@@ -5,11 +5,20 @@ import { useParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Navbar from "../../components/Navbar";
 import { getRPSBetById } from "../../server/getRPSBetById";
-import { resolveRPSBet, completeRPSBetResolution } from "../../server/resolveRPSBet";
+import {
+  resolveRPSBet,
+  completeRPSBetResolution,
+} from "../../server/resolveRPSBet";
 import BetOptions from "../../components/BetOptions";
-import { FaHandRock, FaHandPaper, FaHandScissors, FaTwitter } from "react-icons/fa";
-import Image from 'next/image';
+import {
+  FaHandRock,
+  FaHandPaper,
+  FaHandScissors,
+  FaTwitter,
+} from "react-icons/fa";
+import Image from "next/image";
 import Link from "next/link";
+import { decryptBet } from "../../server/decryptBet";
 
 interface RPSBet {
   id: number;
@@ -37,6 +46,10 @@ export default function RPSBetDetails() {
   const [isFundsPending, setIsFundsPending] = useState(false);
   const [isFundsTransferring, setIsFundsTransferring] = useState(false);
   const wallet = useWallet();
+  const [decryptedMakerBet, setDecryptedMakerBet] = useState<string | null>(
+    null
+  );
+
   const isResolved =
     bet?.winner_address !== null ||
     bet?.winnings_disbursement_signature !== null;
@@ -51,6 +64,18 @@ export default function RPSBetDetails() {
           setError(result.error || "Failed to fetch game details");
         }
         setIsLoading(false);
+
+        if (result.success && result.bet) {
+          setBet(result.bet);
+          if (result.bet.maker_bet) {
+            try {
+              const decrypted = await decryptBet(result.bet.maker_bet);
+              setDecryptedMakerBet(decrypted);
+            } catch (error) {
+              console.error("Failed to decrypt maker's bet:", error);
+            }
+          }
+        }
       }
     }
     fetchBet();
@@ -66,13 +91,21 @@ export default function RPSBetDetails() {
           if (result.bet.bet_taker_address && result.bet.taker_bet) {
             // Resolve the bet and get the winner immediately
             const resolveResult = await resolveRPSBet(Number(id));
-            if (resolveResult && resolveResult.success && resolveResult.winner) {
+            if (
+              resolveResult &&
+              resolveResult.success &&
+              resolveResult.winner
+            ) {
               setGameOutcome(resolveResult.winner);
               setIsResolving(false);
               setIsFundsTransferring(true);
 
               // Continue with the fund transfer and database update in the background
-              const finalResult = await completeRPSBetResolution(Number(id), resolveResult.winner, resolveResult.option!);
+              const finalResult = await completeRPSBetResolution(
+                Number(id),
+                resolveResult.winner,
+                resolveResult.option!
+              );
               if (finalResult.success) {
                 const updatedResult = await getRPSBetById(Number(id));
                 if (updatedResult.success && updatedResult.bet) {
@@ -89,7 +122,9 @@ export default function RPSBetDetails() {
         }
       } catch (error) {
         console.error("Error handling bet placement:", error);
-        setError(error instanceof Error ? error.message : "An unknown error occurred");
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred"
+        );
         setIsResolving(false);
         setIsFundsTransferring(false);
       }
@@ -146,9 +181,23 @@ export default function RPSBetDetails() {
     }
   };
 
+  const getBetIcon = (bet: string | null) => {
+    switch (bet) {
+      case "Rock":
+        return <Image src="/rock.png" alt="Rock" width={50} height={50} />;
+      case "Paper":
+        return <Image src="/paper.png" alt="Paper" width={50} height={50} />;
+      case "Scissors":
+        return (
+          <Image src="/scissors.png" alt="Scissors" width={50} height={50} />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    
-      <div className="min-h-screen flex flex-col text-white">
+    <div className="min-h-screen flex flex-col text-white">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">
@@ -176,13 +225,17 @@ export default function RPSBetDetails() {
         </h1>
         {isLoading && <p className="text-center">Loading Game details...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
-        
-        
+
         {isResolving && !gameOutcome && (
           <div className="text-center">
             <p className="mb-4">Game resolving, please wait...</p>
             <div className="flex justify-center">
-              <Image src="/loading.gif" alt="Loading" width={180} height={180} />
+              <Image
+                src="/loading.gif"
+                alt="Loading"
+                width={180}
+                height={180}
+              />
             </div>
           </div>
         )}
@@ -193,84 +246,87 @@ export default function RPSBetDetails() {
           </div>
         )}
 
-
         {bet && !isResolving && (
           <>
             <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="font-semibold mb-2">
-                    Game Amount: {isResolved 
-                      ? (bet.winner_address === "DRAW" 
-                        ? Number(bet.bet_amount).toFixed(2) 
-                        : (bet.winner_address === wallet.publicKey?.toBase58() 
-                          ? (Number(bet.bet_amount) * 2).toFixed(2) 
-                          : Number(bet.bet_amount).toFixed(2)))
-                      : Number(bet.bet_amount).toFixed(2)} SOL
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold flex items-center justify-start md:justify-end">
-                    <span className="mr-2">Pot Address:</span>
-                    <a
-                      href={`https://solscan.io/account/${bet.pot_address}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      {formatAddress(bet.pot_address)}
-                    </a>
-                  </p>
-                </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div>
+      <p className="font-semibold mb-2">
+        Game Amount:{" "}
+        {isResolved
+          ? bet.winner_address === "DRAW"
+            ? Number(bet.bet_amount).toFixed(2)
+            : bet.winner_address === wallet.publicKey?.toBase58()
+            ? (Number(bet.bet_amount) * 2).toFixed(2)
+            : Number(bet.bet_amount).toFixed(2)
+          : Number(bet.bet_amount).toFixed(2)}{" "}
+        SOL
+      </p>
+    </div>
+    <div>
+      <p className="font-semibold flex items-center justify-start md:justify-end">
+        <span className="mr-2">Pot Address:</span>
+        <a
+          href={`https://solscan.io/account/${bet.pot_address}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300"
+        >
+          {formatAddress(bet.pot_address)}
+        </a>
+      </p>
+    </div>
 
-                {(bet.winner_address || gameOutcome) && (
-                  <>
-                    <div>
-                      <p className="font-semibold">Winner:</p>
-                      <a
-                        href={`https://solscan.io/account/${bet.winner_address || gameOutcome}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 break-all"
-                      >
-                        {formatAddress(bet.winner_address || gameOutcome || '')}
-                      </a>
-                    </div>
-                    {bet.winnings_disbursement_signature && (
-                      <div className="text-left md:text-right">
-                        <p className="font-semibold">Winnings Disbursement:</p>
-                        <a
-                          href={`https://solscan.io/tx/${bet.winnings_disbursement_signature}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-300 break-all"
-                        >
-                          {formatSignature(bet.winnings_disbursement_signature)}
-                        </a>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+    {(bet.winner_address || gameOutcome) && (
+      <>
+        <div>
+          <p className="font-semibold">Winner:</p>
+          <a
+            href={`https://solscan.io/account/${
+              bet.winner_address || gameOutcome
+            }`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 break-all"
+          >
+            {formatAddress(bet.winner_address || gameOutcome || "")}
+          </a>
+        </div>
+        {bet.winnings_disbursement_signature && (
+          <div className="text-left md:text-right">
+            <p className="font-semibold">Winnings Disbursement:</p>
+            <a
+              href={`https://solscan.io/tx/${bet.winnings_disbursement_signature}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 break-all"
+            >
+              {formatSignature(bet.winnings_disbursement_signature)}
+            </a>
+          </div>
+        )}
+      </>
+    )}
+  </div>
 
-              {!isResolved && !gameOutcome && (
-                <>
-                  <BetOptions
-                    betId={bet.id}
-                    betAmount={bet.bet_amount}
-                    potAddress={bet.pot_address}
-                    onBetPlaced={handleBetPlaced}
-                    isResolved={isResolved}
-                  />
-                  <p className="mt-4 text-center text-sm text-gray-400">
-                    Choose your move and match the game amount. Whoever wins
-                    gets the pot! <br />
-                    Winnings are automatically sent to the winning wallet
-                    address.
-                  </p>
-                </>
-              )}
-            </div>
+  {(bet.winner_address || gameOutcome) && (
+    <div className="mt-6 flex flex-col items-center">
+      
+      <div className="flex justify-center items-center space-x-16">
+        <div className="text-center">
+          <p className="mb-2">Maker&apos;s Move</p>
+          <div className="transform scale-x-[-1]">
+            {getBetIcon(decryptedMakerBet)}
+          </div>
+        </div>
+        <div className="text-center">
+          <p className="mb-2">Taker&apos;s Move</p>
+          {getBetIcon(bet.taker_bet)}
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
             {(isResolved || gameOutcome) && (
               <div className="mt-6 text-center space-y-4">
