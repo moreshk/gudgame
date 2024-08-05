@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import Navbar from "../../components/Navbar";
-import { getRPSBetById } from "../../server/getRPSBetById";
+import { getRPSBetById } from "../server/getRPSBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../../server/resolveRPSBet";
-import BetOptions from "../../components/BetOptions";
+} from "../server/resolveRPSBet";
+import BetOptions from "./BetOptions";
 import {
   FaHandRock,
   FaHandPaper,
@@ -18,8 +16,8 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { decryptBet } from "../../server/decryptBet";
-import BetsByAddress from "../../components/BetsByAddress";
+import { decryptBet } from "../server/decryptBet";
+import BetsByAddress from "./BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";
 
@@ -44,8 +42,11 @@ interface RPSBet {
   winnings_disbursement_signature: string | null;
 }
 
-export default function RPSBetDetails() {
-  const { id } = useParams();
+interface RPSBetDetailsProps {
+  id: number;
+}
+
+export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
   const [bet, setBet] = useState<RPSBet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isResolving, setIsResolving] = useState(false);
@@ -64,27 +65,21 @@ export default function RPSBetDetails() {
 
   useEffect(() => {
     async function fetchBet() {
-      if (id) {
-        const result = await getRPSBetById(Number(id));
-        if (result.success && result.bet) {
-          setBet(result.bet);
-        } else {
-          setError(result.error || "Failed to fetch game details");
-        }
-        setIsLoading(false);
-
-        if (result.success && result.bet) {
-          setBet(result.bet);
-          if (result.bet.maker_bet) {
-            try {
-              const decrypted = await decryptBet(result.bet.maker_bet);
-              setDecryptedMakerBet(decrypted);
-            } catch (error) {
-              console.error("Failed to decrypt maker's bet:", error);
-            }
+      const result = await getRPSBetById(id);
+      if (result.success && result.bet) {
+        setBet(result.bet);
+        if (result.bet.maker_bet) {
+          try {
+            const decrypted = await decryptBet(result.bet.maker_bet);
+            setDecryptedMakerBet(decrypted);
+          } catch (error) {
+            console.error("Failed to decrypt maker's bet:", error);
           }
         }
+      } else {
+        setError(result.error || "Failed to fetch game details");
       }
+      setIsLoading(false);
     }
     fetchBet();
   }, [id]);
@@ -205,38 +200,36 @@ export default function RPSBetDetails() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-white">
-      <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center">
-          {isLoading ? (
-            "Loading..."
-          ) : bet ? (
-            gameOutcome || isResolved ? (
-              getResultMessage()
-            ) : (
-              <span
-                className={`${pressStart2P.className} text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed`}
-              >
-                <a
-                  href={`https://solscan.io/account/${bet.bet_maker_address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 break-all"
-                >
-                  {formatAddress(bet.bet_maker_address)}
-                </a>{" "}
-                has started a game of Rock Paper Scissors
-              </span>
-            )
+    <div className="text-white">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center">
+        {isLoading ? (
+          "Loading..."
+        ) : bet ? (
+          gameOutcome || isResolved ? (
+            getResultMessage()
           ) : (
-            "Game not found"
-          )}
-        </h1>
-        {isLoading && <p className="text-center">Loading Game details...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
+            <span
+              className={`${pressStart2P.className} text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed`}
+            >
+              <a
+                href={`https://solscan.io/account/${bet.bet_maker_address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 break-all"
+              >
+                {formatAddress(bet.bet_maker_address)}
+              </a>{" "}
+              has started a game of Rock Paper Scissors
+            </span>
+          )
+        ) : (
+          "Game not found"
+        )}
+      </h1>
+      {isLoading && <p className="text-center">Loading Game details...</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
-        {isResolving && !gameOutcome && (
+      {isResolving && !gameOutcome && (
           <div className="text-center">
             <p className="mb-4">Game resolving, please wait...</p>
             <div className="flex justify-center">
@@ -383,7 +376,6 @@ export default function RPSBetDetails() {
             </div>
           </>
         )}
-      </main>
     </div>
   );
 }
