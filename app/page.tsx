@@ -33,7 +33,7 @@ export default function EarliestOpenBet() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow flex flex-col items-center justify-center p-4">
-        <h1 className="text-3xl font-bold mb-8">Earliest Open Bet</h1>
+        {/* <h1 className="text-3xl font-bold mb-8">Earliest Open Bet</h1> */}
         {isLoading ? (
           <p>Loading...</p>
         ) : error ? (

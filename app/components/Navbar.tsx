@@ -51,7 +51,7 @@ const Navbar = () => {
       {isMenuOpen && (
         // <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
                   <div className="absolute top-16 right-0 w-64 bg-gray-900 rounded-md shadow-lg py-1">
-          <Link href="/create" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
+          <Link href="/create-rps-game" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
           <Link href="/open-rps-games" className="block py-2 px-4 hover:bg-gray-700">Open Games</Link>
 
           <div>
