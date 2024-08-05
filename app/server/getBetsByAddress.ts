@@ -38,7 +38,7 @@ export async function getLastResolvedBets(walletAddress: string) {
           WHEN bet_maker_address = ${walletAddress} THEN bet_making_timestamp
           ELSE bet_taking_timestamp
         END DESC
-      LIMIT 10;
+      LIMIT 8;
     `;
 
     const bets = await Promise.all(result.rows.map(async (bet) => {

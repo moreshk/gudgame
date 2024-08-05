@@ -83,8 +83,8 @@ export default function BetsByAddress({ address }: BetsByAddressProps) {
             <Image 
               src={getBetImage(bet.is_maker ? bet.maker_bet : (bet.taker_bet ?? 'unknown'))}
               alt={bet.is_maker ? bet.maker_bet : (bet.taker_bet ?? 'unknown')}
-              width={50}
-              height={50}
+              width={40}
+              height={40}
             />
             <p className="mt-2 text-center">{bet.is_maker ? bet.maker_bet : bet.taker_bet}</p>
           </div>
