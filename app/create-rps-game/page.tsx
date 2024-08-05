@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { FaHandRock, FaHandPaper, FaHandScissors } from 'react-icons/fa';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { createSolanaPotAddress } from '../server/createPot';
 import { createRPSBet } from '../server/createRPSBet';
-import { sleep } from '../utils/sleep'; // Add this import
+import { Press_Start_2P } from 'next/font/google';
+const pressStart2P = Press_Start_2P({ 
+  weight: '400',
+  subsets: ['latin'],
+});
 
 const HOUSE_ADDRESS = process.env.NEXT_PUBLIC_HOUSE_ADDRESS || '9BAa8bSQrUAT3nipra5bt3DJbW2Wyqfc2SXw3vGcjpbj';
 
@@ -25,8 +29,8 @@ export default function CreateRPSBet() {
     if (!wallet.publicKey || !connection || !selectedBet || !amount) return;
 
     // Validate minimum bet amount
-    if (parseFloat(amount) < 0.1) {
-      setErrorMessage('Minimum game amount is 0.01 SOL');
+    if (parseFloat(amount) < 0.01) {
+      setErrorMessage('Minimum bet amount is 0.01 SOL');
       return;
     }
 
@@ -62,35 +66,11 @@ export default function CreateRPSBet() {
       );
 
       const signature = await wallet.sendTransaction(transaction, connection);
-
-      // Wait for transaction confirmation with retry logic
-      const maxRetries = 5;
-      const retryDelay = 2000; // 2 seconds
-      let confirmed = false;
-
-      for (let i = 0; i < maxRetries; i++) {
-        try {
-          const confirmation = await connection.confirmTransaction({
-            signature,
-            blockhash: latestBlockhash.blockhash,
-            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-          }, 'confirmed');
-
-          if (confirmation.value.err) {
-            throw new Error('Transaction failed');
-          }
-
-          confirmed = true;
-          break;
-        } catch (error) {
-          console.warn(`Confirmation attempt ${i + 1} failed. Retrying...`);
-          await sleep(retryDelay);
-        }
-      }
-
-      if (!confirmed) {
-        throw new Error('Transaction confirmation timed out');
-      }
+      await connection.confirmTransaction({
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      });
 
       // Create RPS bet
       const betResult = await createRPSBet({
@@ -107,8 +87,8 @@ export default function CreateRPSBet() {
         throw new Error(betResult.error);
       }
     } catch (error) {
-      console.error('Error creating RPS game:', error);
-      setErrorMessage('Failed to create RPS game. Please check your wallet for the transaction status.');
+      console.error('Error creating RPS bet:', error);
+      setErrorMessage('Failed to create RPS game');
     } finally {
       setIsCreating(false);
     }
@@ -118,14 +98,22 @@ export default function CreateRPSBet() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow flex flex-col items-center justify-center p-4">
+      {isCreating && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Image src="/loading.gif" alt="Loading" width={100} height={100} />
+          </div>
+        )}
         {wallet.publicKey ? (
           <div className="w-full max-w-md">
-            <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1>
+            {/* <h1 className="text-3xl font-bold mb-4 text-center">Rock, Paper, Scissor ... shoot!</h1> */}
+            <h1 className={`text-2xl font-bold mb-4 text-center text-[#f13992] ${pressStart2P.className}`}>
+  Create a game of Rock, Paper, Scissors!
+</h1>
             {errorMessage && (
               <div className="mb-4 p-2 bg-red-500 text-white rounded">{errorMessage}</div>
             )}
             <div className="mb-4">
-              <label htmlFor="amount" className="block mb-2">Amount (SOL)</label>
+              {/* <label htmlFor="amount" className="block mb-2">Amount (SOL)</label> */}
               <input
                 type="number"
                 id="amount"
@@ -137,16 +125,21 @@ export default function CreateRPSBet() {
                 placeholder="Enter amount (min 0.01 SOL)"
               />
             </div>
+            <label htmlFor="amount" className="block mb-2">Pick your move:</label>
             <div className="flex justify-between mb-4">
               {['Rock', 'Paper', 'Scissors'].map((bet) => (
                 <button
                   key={bet}
                   onClick={() => setSelectedBet(bet as 'Rock' | 'Paper' | 'Scissors')}
-                  className={`p-4 border rounded ${selectedBet === bet ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`p-4 border rounded ${selectedBet === bet ? 'bg-blue-500' : 'bg-gray-700'} transition-colors`}
                 >
-                  {bet === 'Rock' && <FaHandRock size={24} />}
-                  {bet === 'Paper' && <FaHandPaper size={24} />}
-                  {bet === 'Scissors' && <FaHandScissors size={24} />}
+                  <Image 
+                    src={`/${bet.toLowerCase()}.png`} 
+                    alt={bet} 
+                    width={60} 
+                    height={60}
+                    className={`transition-opacity ${selectedBet === bet ? 'opacity-100' : 'opacity-70'}`}
+                  />
                 </button>
               ))}
             </div>
@@ -157,6 +150,11 @@ export default function CreateRPSBet() {
             >
               {isCreating ? 'Creating...' : 'Create Game'}
             </button>
+            <p className="mt-4 text-center text-sm text-gray-400">
+  Enter the amount you&apos;d like to put up and choose your move.<br />
+  Other players will match and choose theirs.<br />
+  Whoever wins gets the pot!
+</p>
           </div>
         ) : (
           <h1 className="text-3xl font-bold text-center">Please connect your wallet</h1>
