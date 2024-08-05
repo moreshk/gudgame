@@ -73,7 +73,7 @@ export default function BetsByAddress() {
         >
           <Link href={`https://solscan.io/account/${address}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
             {shortenAddress(address)}
-          </Link> bets
+          </Link> moves
         </h1>
         {isLoading && <p className="text-center">Loading bets...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}

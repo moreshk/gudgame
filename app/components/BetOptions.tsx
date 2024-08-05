@@ -217,7 +217,7 @@ export default function BetOptions({
       )}
       {isProcessing && (
         <p className="text-yellow-400">
-          Processing bet, please confirm the transaction in your wallet...
+          Processing game, please confirm the transaction in your wallet...
         </p>
       )}
       {isConfirming && (
