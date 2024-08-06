@@ -70,6 +70,7 @@ const Navbar = () => {
           </div>
 
           <Link href="/leaderboard" className="block py-2 px-4 hover:bg-gray-700">Leaderboard</Link>
+          <Link href="https://docs.gudgame.lol" target="_blank" rel="noopener noreferrer" className="block py-2 px-4 hover:bg-gray-700">Docs</Link>
         </div>
       )}
     </nav>
