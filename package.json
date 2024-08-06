@@ -10,6 +10,7 @@
     "migrate": "node scripts/runMigrations.mjs"
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.2",
     "@solana/actions": "^1.6.1",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
@@ -21,12 +22,14 @@
     "bs58": "^6.0.0",
     "dotenv": "^16.4.5",
     "next": "14.2.5",
+    "papaparse": "^5.4.1",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.2.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.13",
+    "@types/papaparse": "^5.3.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
