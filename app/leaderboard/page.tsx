@@ -84,7 +84,7 @@ export default function LeaderboardPage() {
         <h1
           className={`text-2xl font-bold mb-4 text-center text-[#f13992] ${pressStart2P.className}`}
         >
-          Supreme Leaderboard
+          Super Team Leaderboard
         </h1>
         {isLoading && <p className="text-center">Loading leaderboard...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
