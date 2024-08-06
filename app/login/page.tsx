@@ -10,7 +10,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (passcode === 'rps4life') {
+    if (passcode === 'superteam' || passcode === 'rps4life') {
       // Set a cookie to remember the user is authenticated
       document.cookie = 'isAuthenticated=true; path=/; max-age=3600'; // Expires in 1 hour
       
