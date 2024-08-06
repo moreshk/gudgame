@@ -25,7 +25,7 @@ export default function LeaderboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [whitelistedAddresses, setWhitelistedAddresses] = useState<Set<string>>(new Set());
-  const [showOnlyWhitelisted, setShowOnlyWhitelisted] = useState(false);
+  const [showOnlyWhitelisted, setShowOnlyWhitelisted] = useState(true);
 
   useEffect(() => {
     async function loadLeaderboard() {
@@ -84,24 +84,24 @@ export default function LeaderboardPage() {
         <h1
           className={`text-2xl font-bold mb-4 text-center text-[#f13992] ${pressStart2P.className}`}
         >
-          Leaderboard
+          Supreme Leaderboard
         </h1>
         {isLoading && <p className="text-center">Loading leaderboard...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {!isLoading && !error && (
           <>
             <div className="flex items-center justify-end mb-4">
-              <span className="mr-2">Show only whitelisted addresses</span>
+              <span className="mr-2">Show all addresses</span>
               <Switch
-                checked={showOnlyWhitelisted}
-                onChange={setShowOnlyWhitelisted}
+                checked={!showOnlyWhitelisted}
+                onChange={(checked) => setShowOnlyWhitelisted(!checked)}
                 className={`${
-                  showOnlyWhitelisted ? 'bg-blue-600' : 'bg-gray-200'
+                  !showOnlyWhitelisted ? 'bg-blue-600' : 'bg-gray-200'
                 } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
               >
                 <span
                   className={`${
-                    showOnlyWhitelisted ? 'translate-x-6' : 'translate-x-1'
+                    !showOnlyWhitelisted ? 'translate-x-6' : 'translate-x-1'
                   } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                 />
               </Switch>

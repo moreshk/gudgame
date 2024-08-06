@@ -1,7 +1,6 @@
-// app/login/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const Login: React.FC = () => {
@@ -9,16 +8,28 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string>('');
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (passcode === 'rps4life') {
       // Set a cookie to remember the user is authenticated
       document.cookie = 'isAuthenticated=true; path=/; max-age=3600'; // Expires in 1 hour
+      
+      // Add a small delay before redirecting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       router.push('/');
     } else {
       setError('Incorrect passcode');
     }
   };
+
+  useEffect(() => {
+    // Check if the user is already authenticated
+    const isAuthenticated = document.cookie.includes('isAuthenticated=true');
+    if (isAuthenticated) {
+      router.push('/');
+    }
+  }, [router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
