@@ -20,6 +20,7 @@ import { decryptBet } from "../server/decryptBet";
 import BetsByAddress from "./BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";
+import { useRouter } from "next/navigation";
 
 const pressStart2P = Press_Start_2P({
   weight: "400",
@@ -47,6 +48,7 @@ interface RPSBetDetailsProps {
 }
 
 export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
+  const router = useRouter();
   const [bet, setBet] = useState<RPSBet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isResolving, setIsResolving] = useState(false);
@@ -199,6 +201,12 @@ export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
     }
   };
 
+  const handleStartNewGame = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    router.push("/");
+    router.refresh();
+  };
+
   return (
     <div className="text-white">
       <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center">
@@ -230,152 +238,147 @@ export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
       {error && <p className="text-center text-red-500">{error}</p>}
 
       {isResolving && !gameOutcome && (
-          <div className="text-center">
-            <p className="mb-4">Game resolving, please wait...</p>
-            <div className="flex justify-center">
-              <Image
-                src="/loading.gif"
-                alt="Loading"
-                width={180}
-                height={180}
-              />
-            </div>
+        <div className="text-center">
+          <p className="mb-4">Game resolving, please wait...</p>
+          <div className="flex justify-center">
+            <Image src="/loading.gif" alt="Loading" width={180} height={180} />
           </div>
-        )}
-        {gameOutcome && (
-          <div className="text-center mt-4">
-            <p>{getOutcomeMessage()}</p>
-            {isFundsTransferring && <p>Funds are being transferred...</p>}
-          </div>
-        )}
+        </div>
+      )}
+      {gameOutcome && (
+        <div className="text-center mt-4">
+          <p>{getOutcomeMessage()}</p>
+          {isFundsTransferring && <p>Funds are being transferred...</p>}
+        </div>
+      )}
 
-        {bet && !isResolving && (
-          <>
-            <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <p className="font-semibold mb-2">
-                    Game Amount:{" "}
-                    {isResolved
-                      ? bet.winner_address === "DRAW"
-                        ? Number(bet.bet_amount).toFixed(2)
-                        : bet.winner_address === wallet.publicKey?.toBase58()
-                        ? (Number(bet.bet_amount) * 2).toFixed(2)
-                        : Number(bet.bet_amount).toFixed(2)
-                      : Number(bet.bet_amount).toFixed(2)}{" "}
-                    SOL
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold flex items-center justify-start md:justify-end">
-                    <span className="mr-2">Pot Address:</span>
+      {bet && !isResolving && (
+        <>
+          <div className="bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <p className="font-semibold mb-2">
+                  Game Amount:{" "}
+                  {isResolved
+                    ? bet.winner_address === "DRAW"
+                      ? Number(bet.bet_amount).toFixed(2)
+                      : bet.winner_address === wallet.publicKey?.toBase58()
+                      ? (Number(bet.bet_amount) * 2).toFixed(2)
+                      : Number(bet.bet_amount).toFixed(2)
+                    : Number(bet.bet_amount).toFixed(2)}{" "}
+                  SOL
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold flex items-center justify-start md:justify-end">
+                  <span className="mr-2">Pot Address:</span>
+                  <a
+                    href={`https://solscan.io/account/${bet.pot_address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    {formatAddress(bet.pot_address)}
+                  </a>
+                </p>
+              </div>
+
+              {(bet.winner_address || gameOutcome) && (
+                <>
+                  <div>
+                    <p className="font-semibold">Winner:</p>
                     <a
-                      href={`https://solscan.io/account/${bet.pot_address}`}
+                      href={`https://solscan.io/account/${
+                        bet.winner_address || gameOutcome
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300"
+                      className="text-blue-400 hover:text-blue-300 break-all"
                     >
-                      {formatAddress(bet.pot_address)}
+                      {formatAddress(bet.winner_address || gameOutcome || "")}
                     </a>
-                  </p>
-                </div>
-
-                {(bet.winner_address || gameOutcome) && (
-                  <>
-                    <div>
-                      <p className="font-semibold">Winner:</p>
+                  </div>
+                  {bet.winnings_disbursement_signature && (
+                    <div className="text-left md:text-right">
+                      <p className="font-semibold">Winnings Disbursement:</p>
                       <a
-                        href={`https://solscan.io/account/${
-                          bet.winner_address || gameOutcome
-                        }`}
+                        href={`https://solscan.io/tx/${bet.winnings_disbursement_signature}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 break-all"
                       >
-                        {formatAddress(bet.winner_address || gameOutcome || "")}
+                        {formatSignature(bet.winnings_disbursement_signature)}
                       </a>
                     </div>
-                    {bet.winnings_disbursement_signature && (
-                      <div className="text-left md:text-right">
-                        <p className="font-semibold">Winnings Disbursement:</p>
-                        <a
-                          href={`https://solscan.io/tx/${bet.winnings_disbursement_signature}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-300 break-all"
-                        >
-                          {formatSignature(bet.winnings_disbursement_signature)}
-                        </a>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {(bet.winner_address || gameOutcome) && (
-                <div className="mt-6 flex flex-col items-center">
-                  <div className="flex justify-center items-center space-x-16">
-                    <div className="text-center">
-                      <p className="mb-2">Maker&apos;s Move</p>
-                      <div className="transform scale-x-[-1]">
-                        {getBetIcon(decryptedMakerBet)}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <p className="mb-2">Taker&apos;s Move</p>
-                      {getBetIcon(bet.taker_bet)}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {!isResolved && !gameOutcome && (
-                <>
-                  <BetOptions
-                    betId={bet.id}
-                    betAmount={bet.bet_amount}
-                    potAddress={bet.pot_address}
-                    onBetPlaced={handleBetPlaced}
-                    isResolved={isResolved}
-                  />
-                  <p className="mt-4 text-center text-sm text-gray-400">
-                    Choose your move and match the game amount. Whoever wins
-                    gets the pot! <br />
-                    Winnings are automatically sent to the winning wallet
-                    address.
-                  </p>
-                  <div className="my-8">
-                    {" "}
-                    {/* Added spacing */}
-                    <BetsByAddress address={bet.bet_maker_address} />
-                  </div>
-                  {/* <BetsByAddress address={bet.bet_maker_address} /> */}
+                  )}
                 </>
               )}
             </div>
 
-            {(isResolved || gameOutcome) && (
-              <div className="mt-6 text-center space-y-4">
-                <Link
-                  href="/"
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-block"
-                >
-                  Start New Game
-                </Link>
+            {(bet.winner_address || gameOutcome) && (
+              <div className="mt-6 flex flex-col items-center">
+                <div className="flex justify-center items-center space-x-16">
+                  <div className="text-center">
+                    <p className="mb-2">Maker&apos;s Move</p>
+                    <div className="transform scale-x-[-1]">
+                      {getBetIcon(decryptedMakerBet)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="mb-2">Taker&apos;s Move</p>
+                    {getBetIcon(bet.taker_bet)}
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className="mt-6 text-center">
-              <button
-                onClick={shareOnTwitter}
-                className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+            {!isResolved && !gameOutcome && (
+              <>
+                <BetOptions
+                  betId={bet.id}
+                  betAmount={bet.bet_amount}
+                  potAddress={bet.pot_address}
+                  onBetPlaced={handleBetPlaced}
+                  isResolved={isResolved}
+                />
+                <p className="mt-4 text-center text-sm text-gray-400">
+                  Choose your move and match the game amount. Whoever wins gets
+                  the pot! <br />
+                  Winnings are automatically sent to the winning wallet address.
+                </p>
+                <div className="my-8">
+                  {" "}
+                  {/* Added spacing */}
+                  <BetsByAddress address={bet.bet_maker_address} />
+                </div>
+                {/* <BetsByAddress address={bet.bet_maker_address} /> */}
+              </>
+            )}
+          </div>
+
+          {(isResolved || gameOutcome) && (
+            <div className="mt-6 text-center space-y-4">
+              <Link
+                href="/"
+                onClick={handleStartNewGame}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-block"
               >
-                <FaTwitter className="mr-2" />
-                Share on X
-              </button>
+                Start New Game
+              </Link>
             </div>
-          </>
-        )}
+          )}
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={shareOnTwitter}
+              className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+            >
+              <FaTwitter className="mr-2" />
+              Share on X
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
