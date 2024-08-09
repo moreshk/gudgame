@@ -203,8 +203,8 @@ export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
 
   const handleStartNewGame = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    router.push("/");
-    router.refresh();
+    // Force a hard refresh of the page
+    window.location.href = "/";
   };
 
   return (
@@ -358,13 +358,13 @@ export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
 
           {(isResolved || gameOutcome) && (
             <div className="mt-6 text-center space-y-4">
-              <Link
+              <a
                 href="/"
                 onClick={handleStartNewGame}
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-block"
               >
                 Start New Game
-              </Link>
+              </a>
             </div>
           )}
 
