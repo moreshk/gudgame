@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FaShare } from "react-icons/fa";
+
 import { useWallet } from "@solana/wallet-adapter-react";
 import { getRPSBetById } from "../server/getRPSBetById";
 import {
@@ -60,6 +62,21 @@ export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
   const [decryptedMakerBet, setDecryptedMakerBet] = useState<string | null>(
     null
   );
+
+  const [showShareButton, setShowShareButton] = useState(true);
+  const [copyMessage, setCopyMessage] = useState("");
+
+  const shareGame = () => {
+    const gameUrl = `https://www.gudgame.lol/rps-game/${id}`;
+    navigator.clipboard.writeText(gameUrl).then(() => {
+      setShowShareButton(false);
+      setCopyMessage("Game link copied. You can send it to your friends.");
+      setTimeout(() => {
+        setShowShareButton(true);
+        setCopyMessage("");
+      }, 3000);
+    });
+  };
 
   const isResolved =
     bet?.winner_address !== null ||
@@ -368,15 +385,26 @@ export default function RPSBetDetails({ id }: RPSBetDetailsProps) {
             </div>
           )}
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={shareOnTwitter}
-              className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-            >
-              <FaTwitter className="mr-2" />
-              Share on X
-            </button>
-          </div>
+<div className="mt-6 text-center space-x-4">
+  <button
+    onClick={shareOnTwitter}
+    className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+  >
+    <FaTwitter className="mr-2" />
+    Share on X
+  </button>
+  {showShareButton ? (
+    <button
+      onClick={shareGame}
+      className="bg-[#f13992] text-white hover:bg-white hover:text-[#f13992] font-bold py-2 px-4 rounded inline-flex items-center transition-colors duration-200"
+    >
+      <FaShare className="mr-2" />
+      Share Game
+    </button>
+  ) : (
+    <span className="text-green-400">{copyMessage}</span>
+  )}
+</div>
         </>
       )}
     </div>
