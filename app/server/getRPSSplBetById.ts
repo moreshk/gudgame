@@ -1,6 +1,7 @@
 'use server';
 
 import { sql } from '@vercel/postgres';
+import { getTokenInfo } from './getTokenInfo';
 
 interface RPSSplBet {
   id: number;
@@ -16,6 +17,7 @@ interface RPSSplBet {
   bet_taking_timestamp: Date | null;
   winner_address: string | null;
   winnings_disbursement_signature: string | null;
+  token_contract_address: string;
 }
 
 export async function getRPSSplBetById(id: number) {
@@ -30,12 +32,23 @@ export async function getRPSSplBetById(id: number) {
       return { success: false, error: 'Bet not found' };
     }
 
+    const bet = result.rows[0];
+    const tokenInfo = await getTokenInfo(bet.token_contract_address);
+
+    if (!tokenInfo.success) {
+      return { success: false, error: 'Failed to fetch token info' };
+    }
+
     return {
       success: true,
-      bet: result.rows[0]
+      bet: {
+        ...bet,
+        token_symbol: tokenInfo.tokenInfo?.token_symbol ?? 'Unknown',
+        token_decimals: tokenInfo.tokenInfo?.token_decimals ?? 0
+      }
     };
   } catch (error) {
-    console.error('Error fetching RPS bet by ID:', error);
-    return { success: false, error: 'Failed to fetch RPS bet' };
+    console.error('Error fetching RPS SPL bet by ID:', error);
+    return { success: false, error: 'Failed to fetch RPS SPL bet' };
   }
 }

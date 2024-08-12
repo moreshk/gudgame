@@ -44,6 +44,9 @@ interface RPSBet {
   bet_taking_timestamp: Date | null;
   winner_address: string | null;
   winnings_disbursement_signature: string | null;
+  token_contract_address: string;
+  token_symbol: string;
+  token_decimals: number;
 }
 
 export default function RPSBetDetails() {
@@ -78,6 +81,12 @@ export default function RPSBetDetails() {
   const isResolved =
     bet?.winner_address !== null ||
     bet?.winnings_disbursement_signature !== null;
+
+    const formatTokenAmount = (amount: number, decimals: number) => {
+      const factor = Math.pow(10, decimals);
+      return Math.floor(amount / factor).toString();
+    };
+  
 
   useEffect(() => {
     async function fetchBet() {
@@ -282,12 +291,18 @@ export default function RPSBetDetails() {
                     Game Amount:{" "}
                     {isResolved
                       ? bet.winner_address === "DRAW"
-                        ? Number(bet.bet_amount).toFixed(2)
+                        ? formatTokenAmount(bet.bet_amount, bet.token_decimals)
                         : bet.winner_address === wallet.publicKey?.toBase58()
-                        ? (Number(bet.bet_amount) * 2).toFixed(2)
-                        : Number(bet.bet_amount).toFixed(2)
-                      : Number(bet.bet_amount).toFixed(2)}{" "}
-                    SOL
+                        ? formatTokenAmount(
+                            bet.bet_amount * 2,
+                            bet.token_decimals
+                          )
+                        : formatTokenAmount(bet.bet_amount, bet.token_decimals)
+                      : formatTokenAmount(
+                          bet.bet_amount,
+                          bet.token_decimals
+                        )}{" "}
+                    {bet.token_symbol}
                   </p>
                 </div>
                 <div>
