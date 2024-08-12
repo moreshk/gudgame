@@ -194,7 +194,7 @@ export default function CreateRPSBet() {
       });
 
       if (betResult.success) {
-        router.push(`/rps-game/${betResult.id}`);
+        router.push(`/rps-spl-game/${betResult.id}`);
       } else {
         throw new Error(betResult.error);
       }
