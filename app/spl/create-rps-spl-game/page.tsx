@@ -11,6 +11,7 @@ import Navbar from '../../components/Navbar';
 import { createSolanaPotAddress } from '../../server/sol/createPot';
 import { createRPSSplBet } from '../../server/spl/createRPSSplBet';
 import { tokenData } from '../../tokenData';
+import { SystemProgram } from '@solana/web3.js';
 
 import { Press_Start_2P } from 'next/font/google';
 
@@ -111,6 +112,16 @@ export default function CreateRPSBet() {
       const houseTokenAccount = await getAssociatedTokenAddress(tokenMint, new PublicKey(HOUSE_ADDRESS));
 
       const transaction = new Transaction();
+
+      // Add SOL transfer to pot address
+    const solTransferAmount = 0.001 * 1e9; // 0.001 SOL in lamports
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: wallet.publicKey,
+        toPubkey: new PublicKey(potResult.potAddress),
+        lamports: solTransferAmount,
+      })
+    );
 
       // Check if the pot's ATA exists, if not, add instruction to create it
       const potTokenAccountInfo = await connection.getAccountInfo(potTokenAccount);

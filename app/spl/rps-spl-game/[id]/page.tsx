@@ -1,5 +1,5 @@
 "use client";
-
+import { useConnection } from "@solana/wallet-adapter-react";
 import { useState, useEffect } from "react";
 import { formatAddress, formatDate, formatSignature, formatTokenAmount } from "../../../utils/formatters";
 import { getBetIcon } from "../../../utils/betIcons";
@@ -12,7 +12,7 @@ import { getRPSSplBetById } from "../../../server/spl/getRPSSplBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../../../server/sol/resolveRPSBet";
+} from "../../../server/spl/resolveRPSSplBet";
 import BetSPLOptions from "../../../components/BetSPLOptions";
 import {
   FaHandRock,
@@ -77,6 +77,8 @@ export default function RPSBetDetails() {
     shareOnTwitter(bet, wallet);
   };
   
+  const { connection } = useConnection();
+
 
 
   const isResolved =
@@ -139,7 +141,8 @@ export default function RPSBetDetails() {
               const finalResult = await completeRPSBetResolution(
                 Number(id),
                 resolveResult.winner,
-                resolveResult.option!
+                resolveResult.option!,
+                connection
               );
               if (finalResult.success) {
                 const updatedResult = await getRPSSplBetById(Number(id));
