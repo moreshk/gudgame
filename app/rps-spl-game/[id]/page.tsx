@@ -1,19 +1,17 @@
 "use client";
+import React from "react";
 
 import { useState, useEffect } from "react";
-import { formatAddress, formatDate, formatSignature, formatTokenAmount } from "../../../utils/formatters";
-import { getBetIcon } from "../../../utils/betIcons";
-import { shareGame, shareOnTwitter } from "../../../utils/shareUtils";
 
 import { useParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import Navbar from "../../../components/Navbar";
-import { getRPSSplBetById } from "../../../server/spl/getRPSSplBetById";
+import Navbar from "../../components/Navbar";
+import { getRPSSplBetById } from "../../server/spl/getRPSSplBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../../../server/resolveRPSBet";
-import BetSPLOptions from "../../../components/BetSPLOptions";
+} from "../../server/resolveRPSBet";
+import BetSPLOptions from "../../components/BetSPLOptions";
 import {
   FaHandRock,
   FaHandPaper,
@@ -23,8 +21,8 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { decryptBet } from "../../../server/decryptBet";
-import BetsByAddress from "../../../components/BetsByAddress";
+import { decryptBet } from "../../server/decryptBet";
+import BetsByAddress from "../../components/BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";
 
@@ -69,15 +67,17 @@ export default function RPSBetDetails() {
   const [showShareButton, setShowShareButton] = useState(true);
   const [copyMessage, setCopyMessage] = useState("");
 
-  const handleShareGame = () => {
-    shareGame(id as string, setShowShareButton, setCopyMessage);
+  const shareGame = () => {
+    const gameUrl = `https://www.gudgame.lol/rps-spl-game/${id}`;
+    navigator.clipboard.writeText(gameUrl).then(() => {
+      setShowShareButton(false);
+      setCopyMessage("Game link copied. You can send it to your friends.");
+      setTimeout(() => {
+        setShowShareButton(true);
+        setCopyMessage("");
+      }, 3000);
+    });
   };
-
-  const handleShareOnTwitter = () => {
-    shareOnTwitter(bet, wallet);
-  };
-  
-
 
   const isResolved =
     bet?.winner_address !== null ||
@@ -184,6 +184,51 @@ export default function RPSBetDetails() {
     if (winnerAddress === wallet.publicKey.toBase58())
       return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
     return `You lost ${amount.toFixed(2)} SOL 😢`;
+  };
+
+  const formatAddress = (address: string) =>
+    `${address.slice(0, 4)}...${address.slice(-4)}`;
+  const formatDate = (date: Date) => new Date(date).toLocaleString();
+  const formatSignature = (signature: string) =>
+    `${signature.slice(0, 4)}...${signature.slice(-4)}`;
+
+  const shareOnTwitter = () => {
+    if (bet && wallet.publicKey) {
+      const formattedAmount = Number(bet.bet_amount * 2).toFixed(2);
+      let tweetText = "";
+
+      if (!bet.bet_taker_address) {
+        tweetText = `Play me in Rock Paper Scissors @gudgamelol! Winner gets ${formattedAmount} SOL - ${window.location.href}`;
+      } else if (bet.winner_address) {
+        if (bet.winner_address === "DRAW") {
+          tweetText = `I just drew a game of Rock Paper Scissors on @gudgamelol! What are the odds? Check it out: www.gudgame.lol`;
+        } else if (bet.winner_address === wallet.publicKey.toBase58()) {
+          tweetText = `I just won ${formattedAmount} SOL playing Rock Paper Scissors on @gudgamelol! 🎉 Want to challenge me? www.gudgame.lol`;
+        } else {
+          tweetText = `I just lost a nail-biting game of Rock Paper Scissors on @gudgamelol. Ready for a rematch? www.gudgame.lol`;
+        }
+      }
+
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        tweetText
+      )}`;
+      window.open(twitterUrl, "_blank");
+    }
+  };
+
+  const getBetIcon = (bet: string | null) => {
+    switch (bet) {
+      case "Rock":
+        return <Image src="/rock.png" alt="Rock" width={50} height={50} />;
+      case "Paper":
+        return <Image src="/paper.png" alt="Paper" width={50} height={50} />;
+      case "Scissors":
+        return (
+          <Image src="/scissors.png" alt="Scissors" width={50} height={50} />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -363,20 +408,23 @@ export default function RPSBetDetails() {
 
             <div className="mt-6 text-center space-x-4">
               <button
-                onClick={handleShareOnTwitter}
+                onClick={shareOnTwitter}
                 className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center"
               >
                 <FaTwitter className="mr-2" />
                 Share on X
               </button>
               {showShareButton ? (
-      <button onClick={handleShareGame}>
-        <FaShare className="mr-2" />
-        Share Game
-      </button>
-    ) : (
-      <span className="text-green-400">{copyMessage}</span>
-    )}
+                <button
+                  onClick={shareGame}
+                  className="bg-[#f13992] text-white hover:bg-white hover:text-[#f13992] font-bold py-2 px-4 rounded inline-flex items-center transition-colors duration-200"
+                >
+                  <FaShare className="mr-2" />
+                  Share Game
+                </button>
+              ) : (
+                <span className="text-green-400">{copyMessage}</span>
+              )}
             </div>
           </>
         )}

@@ -1,18 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
-  Connection,
   PublicKey,
   Transaction,
-  SystemProgram,
   sendAndConfirmRawTransaction,
+  LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import { updateRPSBet } from "../server/updateRPSBets";
 import Image from "next/image";
-import { getRPSBetById } from "../server/getRPSBetById";
+import { getRPSSplBetById } from "../server/spl/getRPSSplBetById";
+import { getTokenInfo } from "../server/getTokenInfo";
+import {
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+} from "@solana/spl-token";
 
 interface BetSPLOptionsProps {
   betId: number;
@@ -20,6 +26,7 @@ interface BetSPLOptionsProps {
   potAddress: string;
   onBetPlaced: () => void;
   isResolved: boolean;
+  tokenContractAddress: string;
 }
 
 export default function BetSPLOptions({
@@ -28,6 +35,7 @@ export default function BetSPLOptions({
   potAddress,
   onBetPlaced,
   isResolved,
+  tokenContractAddress,
 }: BetSPLOptionsProps) {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -36,11 +44,9 @@ export default function BetSPLOptions({
   const [selectedChoice, setSelectedChoice] = useState<
     "Rock" | "Paper" | "Scissors" | null
   >(null);
+  const { connection } = useConnection();
   const wallet = useWallet();
   const { setVisible } = useWalletModal();
-  const connection = new Connection(
-    process.env.NEXT_PUBLIC_RPC_ENDPOINT as string
-  );
 
   const confirmTransaction = async (
     signature: string,
@@ -71,39 +77,105 @@ export default function BetSPLOptions({
     setSelectedChoice(choice);
     setError(null);
     try {
+      const tokenInfo = await getTokenInfo(tokenContractAddress);
+    if (!tokenInfo.success || !tokenInfo.tokenInfo) {
+      throw new Error("Failed to fetch token info");
+    }
 
+    const tokenDecimals = tokenInfo.tokenInfo.token_decimals;
+    const totalAmount = BigInt(betAmount);
+    const potAmount = totalAmount * BigInt(90) / BigInt(100);
+    const houseAmount = totalAmount - potAmount;
+    
+    console.log(`Total amount: ${totalAmount.toString()}, Pot amount: ${potAmount.toString()}, House amount: ${houseAmount.toString()}`);
+
+  
+      const tokenMint = new PublicKey(tokenContractAddress);
       const potPublicKey = new PublicKey(potAddress);
       const housePublicKey = new PublicKey(
         process.env.NEXT_PUBLIC_HOUSE_ADDRESS as string
       );
-
-      const totalLamports = betAmount * 1e9;
-      const potLamports = Math.floor(totalLamports * 0.9);
-      const houseLamports = totalLamports - potLamports;
-
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: wallet.publicKey,
-          toPubkey: potPublicKey,
-          lamports: potLamports,
-        }),
-        SystemProgram.transfer({
-          fromPubkey: wallet.publicKey,
-          toPubkey: housePublicKey,
-          lamports: houseLamports,
-        })
+  
+      if (!tokenInfo.tokenInfo) {
+        throw new Error("Token info is missing");
+      }
+  
+      const fromTokenAccount = await getAssociatedTokenAddress(tokenMint, wallet.publicKey);
+      const toPotTokenAccount = await getAssociatedTokenAddress(tokenMint, potPublicKey);
+      const toHouseTokenAccount = await getAssociatedTokenAddress(tokenMint, housePublicKey);
+  
+      const transaction = new Transaction();
+  
+      // Check if the recipient's ATAs exist, if not, add instructions to create them
+      const toPotTokenAccountInfo = await connection.getAccountInfo(toPotTokenAccount);
+      if (!toPotTokenAccountInfo) {
+        transaction.add(
+          createAssociatedTokenAccountInstruction(
+            wallet.publicKey,
+            toPotTokenAccount,
+            potPublicKey,
+            tokenMint
+          )
+        );
+      }
+  
+      const toHouseTokenAccountInfo = await connection.getAccountInfo(toHouseTokenAccount);
+      if (!toHouseTokenAccountInfo) {
+        transaction.add(
+          createAssociatedTokenAccountInstruction(
+            wallet.publicKey,
+            toHouseTokenAccount,
+            housePublicKey,
+            tokenMint
+          )
+        );
+      }
+  
+      // Add transfer instructions
+      transaction.add(
+        createTransferInstruction(
+          fromTokenAccount,
+          toPotTokenAccount,
+          wallet.publicKey,
+          potAmount,
+          [],
+          TOKEN_PROGRAM_ID
+        )
       );
-
+  
+      transaction.add(
+        createTransferInstruction(
+          fromTokenAccount,
+          toHouseTokenAccount,
+          wallet.publicKey,
+          houseAmount,
+          [],
+          TOKEN_PROGRAM_ID
+        )
+      );
+  
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = wallet.publicKey;
-
+  
+      // Simulate the transaction to get the required SOL
+      const simulationResult = await connection.simulateTransaction(transaction);
+      const requiredSOL = simulationResult.value.accounts?.find(
+        (account) => account?.owner === wallet.publicKey?.toBase58()
+      )?.lamports || 0;
+  
+      // Check if the wallet has enough SOL
+      const walletBalance = await connection.getBalance(wallet.publicKey);
+      if (walletBalance < requiredSOL) {
+        throw new Error(`Not enough SOL. Required: ${requiredSOL / LAMPORTS_PER_SOL} SOL, Available: ${walletBalance / LAMPORTS_PER_SOL} SOL`);
+      }
+  
       const signedTx = await wallet.signTransaction(transaction);
       
       // Set isProcessing to false after user signs the transaction
       setIsProcessing(false);
       setIsConfirming(true);
-
+  
       const txId = await sendAndConfirmRawTransaction(
         connection,
         signedTx.serialize(),
@@ -113,9 +185,9 @@ export default function BetSPLOptions({
           maxRetries: 5,
         }
       );
-
+  
       await confirmTransaction(txId, 10, 5000, 120000);
-
+  
       const updateResult = await updateRPSBet({
         id: betId,
         betTakerAddress: wallet.publicKey.toBase58(),
@@ -149,7 +221,7 @@ export default function BetSPLOptions({
 
     try {
       // Check bet status before proceeding
-      const result = await getRPSBetById(betId);
+      const result = await getRPSSplBetById(betId);
       if (result.success && result.bet) {
         if (result.bet.bet_taker_address && result.bet.taker_bet) {
           setError("This bet has already been taken. Please refresh the page.");
@@ -187,7 +259,6 @@ export default function BetSPLOptions({
   return (
     <div className="flex flex-col items-center mt-8">
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      {/* <h3 className="text-lg font-semibold mb-4">Choose your move and see if you win!</h3> */}
       <h1 className="text-lg font-semibold mb-4 text-center sm:text-left">Choose your move and see if you win!</h1>
       <div className="flex justify-center space-x-8 mb-4">
         <button
