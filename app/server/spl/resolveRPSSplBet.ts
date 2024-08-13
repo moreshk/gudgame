@@ -34,6 +34,12 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     const bet = betResult.bet;
     console.log("Game details:", JSON.stringify(bet, null, 2));
 
+        // Log bet amount details
+        // console.log(`Original bet amount: ${bet.original_bet_amount}`);
+        console.log(`Bet amount in smallest unit: ${bet.bet_amount}`);
+        console.log(`Token decimals: ${bet.token_decimals}`);
+
+        
     // Check if the bet is already resolved
     if (bet.winner_address) {
       console.log("Game is already resolved");

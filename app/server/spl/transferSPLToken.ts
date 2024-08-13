@@ -11,6 +11,7 @@ import {
     createTransferInstruction,
     getAssociatedTokenAddress,
     createAssociatedTokenAccountInstruction,
+    getAccount
   } from '@solana/spl-token';
   
   import bs58 from 'bs58';
@@ -38,7 +39,7 @@ import {
     amount,
     decimals,
   }: TransferSPLTokenParams): Promise<{ success: boolean; error?: string; signature?: string }> {
-    try {
+      try {
       console.log("Received private key:", typeof privateKey === 'string' ? privateKey.substring(0, 10) + '...' : 'Non-string type');
       console.log("Private key type:", typeof privateKey);
       console.log("Private key length:", typeof privateKey === 'string' ? privateKey.length : (privateKey as any).length);
@@ -69,6 +70,18 @@ import {
       const dest2Pubkey = new PublicKey(destinationAddress2);
   
       const fromATA = await getAssociatedTokenAddress(tokenMint, fromPubkey);
+      
+       // Check token balance
+    const tokenAccount = await getAccount(connection, fromATA);
+    const tokenBalance = tokenAccount.amount;
+    console.log(`Token balance in source account: ${tokenBalance.toString()}`);
+    console.log(`Total amount to transfer: ${amount.toString()}`);
+
+    if (tokenBalance < amount) {
+      throw new Error(`Insufficient token balance. Required: ${amount.toString()}, Available: ${tokenBalance.toString()}`);
+    }
+
+      
       const toATA1 = await getAssociatedTokenAddress(tokenMint, dest1Pubkey);
       const toATA2 = await getAssociatedTokenAddress(tokenMint, dest2Pubkey);
   
@@ -115,6 +128,9 @@ import {
           break;
       }
   
+      console.log(`Amount to transfer to destination 1: ${amount1.toString()}`);
+    console.log(`Amount to transfer to destination 2: ${amount2.toString()}`);
+
       // Add transfer instructions
       if (amount1 > 0) {
         transaction.add(
