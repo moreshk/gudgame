@@ -7,9 +7,9 @@ import { createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID,
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Select from 'react-select';
-import Navbar from '../components/Navbar';
-import { createSolanaPotAddress } from '../server/createPot';
-import { createRPSSplBet } from '../server/createRPSSplBet';
+import Navbar from '../../components/Navbar';
+import { createSolanaPotAddress } from '../../server/createPot';
+import { createRPSSplBet } from '../../server/spl/createRPSSplBet';
 
 import { Press_Start_2P } from 'next/font/google';
 

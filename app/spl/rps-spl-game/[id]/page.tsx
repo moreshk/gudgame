@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 
 import { useParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import Navbar from "../../components/Navbar";
-import { getRPSSplBetById } from "../../server/getRPSSplBetById";
+import Navbar from "../../../components/Navbar";
+import { getRPSSplBetById } from "../../../server/spl/getRPSSplBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../../server/resolveRPSBet";
-import BetSPLOptions from "../../components/BetSPLOptions";
+} from "../../../server/resolveRPSBet";
+import BetSPLOptions from "../../../components/BetSPLOptions";
 import {
   FaHandRock,
   FaHandPaper,
@@ -20,8 +20,8 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { decryptBet } from "../../server/decryptBet";
-import BetsByAddress from "../../components/BetsByAddress";
+import { decryptBet } from "../../../server/decryptBet";
+import BetsByAddress from "../../../components/BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";
 
@@ -67,7 +67,7 @@ export default function RPSBetDetails() {
   const [copyMessage, setCopyMessage] = useState("");
 
   const shareGame = () => {
-    const gameUrl = `https://www.gudgame.lol/rps-spl-game/${id}`;
+    const gameUrl = `https://www.gudgame.lol/spl/rps-spl-game/${id}`;
     navigator.clipboard.writeText(gameUrl).then(() => {
       setShowShareButton(false);
       setCopyMessage("Game link copied. You can send it to your friends.");
