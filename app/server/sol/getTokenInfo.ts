@@ -1,4 +1,4 @@
-import { tokenData, TokenInfo } from '../tokenData';
+import { tokenData, TokenInfo } from '../../tokenData';
 
 export async function getTokenInfo(contractAddress: string) {
   try {

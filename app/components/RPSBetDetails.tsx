@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { FaShare } from "react-icons/fa";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { getRPSBetById } from "../server/getRPSBetById";
+import { getRPSBetById } from "../server/sol/getRPSBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../server/resolveRPSBet";
+} from "../server/sol/resolveRPSBet";
 import BetOptions from "./BetOptions";
 import {
   FaHandRock,
@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { decryptBet } from "../server/decryptBet";
+import { decryptBet } from "../server/sol/decryptBet";
 import BetsByAddress from "./BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";

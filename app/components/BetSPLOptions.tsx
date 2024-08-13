@@ -9,10 +9,10 @@ import {
   sendAndConfirmRawTransaction,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
-import { updateRPSBet } from "../server/updateRPSBets";
+import { updateRPSBet } from "../server/spl/updateRPSSplBets";
 import Image from "next/image";
 import { getRPSSplBetById } from "../server/spl/getRPSSplBetById";
-import { getTokenInfo } from "../server/getTokenInfo";
+import { getTokenInfo } from "../server/sol/getTokenInfo";
 import {
   createTransferInstruction,
   getAssociatedTokenAddress,
@@ -86,7 +86,7 @@ export default function BetSPLOptions({
     const totalAmount = BigInt(betAmount);
     const potAmount = totalAmount * BigInt(90) / BigInt(100);
     const houseAmount = totalAmount - potAmount;
-    
+
     console.log(`Total amount: ${totalAmount.toString()}, Pot amount: ${potAmount.toString()}, House amount: ${houseAmount.toString()}`);
 
   

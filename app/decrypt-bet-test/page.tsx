@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { decryptBet } from '../server/decryptBet';
+import { decryptBet } from '../server/sol/decryptBet';
 import Navbar from '../components/Navbar';
 
 export default function DecryptBetTest() {

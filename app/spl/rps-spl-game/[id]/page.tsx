@@ -12,7 +12,7 @@ import { getRPSSplBetById } from "../../../server/spl/getRPSSplBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../../../server/resolveRPSBet";
+} from "../../../server/sol/resolveRPSBet";
 import BetSPLOptions from "../../../components/BetSPLOptions";
 import {
   FaHandRock,
@@ -23,7 +23,7 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { decryptBet } from "../../../server/decryptBet";
+import { decryptBet } from "../../../server/sol/decryptBet";
 import BetsByAddress from "../../../components/BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";

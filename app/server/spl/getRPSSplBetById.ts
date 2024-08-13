@@ -1,7 +1,7 @@
 'use server';
 
 import { sql } from '@vercel/postgres';
-import { getTokenInfo } from '../getTokenInfo';
+import { getTokenInfo } from '../sol/getTokenInfo';
 
 interface RPSSplBet {
   id: number;

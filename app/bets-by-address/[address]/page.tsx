@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Navbar from "../../components/Navbar";
-import { getLastResolvedBets } from "../../server/getBetsByAddress";
+import { getLastResolvedBets } from "../../server/sol/getBetsByAddress";
 import { Press_Start_2P } from "next/font/google";
 import Link from 'next/link';
 

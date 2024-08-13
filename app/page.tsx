@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getEarliestOpenRPSBet } from './server/getEarliestOpenBet';
+import { getEarliestOpenRPSBet } from './server/sol/getEarliestOpenBet';
 import RPSBetDetails from './components/RPSBetDetails';
 import Navbar from './components/Navbar';
 import { useRouter } from 'next/navigation';

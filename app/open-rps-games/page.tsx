@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import Navbar from "../components/Navbar";
-import { getOpenRPSBets } from "../server/getOpenRPSBets";
+import { getOpenRPSBets } from "../server/sol/getOpenRPSBets";
 import RPSBetCard from "../components/RPSBetCard";
 import { Press_Start_2P } from "next/font/google";
 const pressStart2P = Press_Start_2P({

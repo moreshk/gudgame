@@ -1,5 +1,5 @@
-import { fetchGameById } from '../../server/fetchGameById';
-import { fetchPlaysByGameId } from '../../server/fetchPlaysByGameId';
+import { fetchGameById } from '../../server/sol/fetchGameById';
+import { fetchPlaysByGameId } from '../../server/sol/fetchPlaysByGameId';
 
 export default async function GameDetailsPage({ params }: { params: { id: string } }) {
   const { success: gameSuccess, game, error: gameError } = await fetchGameById(parseInt(params.id));

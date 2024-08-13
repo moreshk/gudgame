@@ -1,4 +1,4 @@
-import { fetchGames } from "../server/fetchGames";
+import { fetchGames } from "../server/sol/fetchGames";
 
 export default async function GamesPage() {
   const { success, games, error } = await fetchGames();

@@ -6,8 +6,8 @@ import { LAMPORTS_PER_SOL, PublicKey, Transaction, SystemProgram } from '@solana
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
-import { createSolanaPotAddress } from '../server/createPot';
-import { createRPSBet } from '../server/createRPSBet';
+import { createSolanaPotAddress } from '../server/sol/createPot';
+import { createRPSBet } from '../server/sol/createRPSBet';
 import { Press_Start_2P } from 'next/font/google';
 const pressStart2P = Press_Start_2P({ 
   weight: '400',

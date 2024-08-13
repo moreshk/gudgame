@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { getTokenInfo } from '../server/getTokenInfo';
+import { getTokenInfo } from '../server/sol/getTokenInfo';
 import Navbar from '../components/Navbar';
 
 export default function TokenInfoPage() {

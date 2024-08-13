@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 import Navbar from '../components/Navbar';
-import { getRPSBetsByMaker } from '../server/getRPSBetsByMaker';
-import { decryptBet } from '../server/decryptBet';
+import { getRPSBetsByMaker } from '../server/sol/getRPSBetsByMaker';
+import { decryptBet } from '../server/sol/decryptBet';
 import Link from 'next/link';
 import { Press_Start_2P } from 'next/font/google';
 const pressStart2P = Press_Start_2P({ 

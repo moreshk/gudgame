@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { createSolanaPotAddress } from '../server/createPot';
+import { createSolanaPotAddress } from '../server/sol/createPot';
 import Navbar from '../components/Navbar';
 
 export default function CreatePot() {

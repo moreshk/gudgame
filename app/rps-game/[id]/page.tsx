@@ -5,11 +5,11 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Navbar from "../../components/Navbar";
-import { getRPSBetById } from "../../server/getRPSBetById";
+import { getRPSBetById } from "../../server/sol/getRPSBetById";
 import {
   resolveRPSBet,
   completeRPSBetResolution,
-} from "../../server/resolveRPSBet";
+} from "../../server/sol/resolveRPSBet";
 import BetOptions from "../../components/BetOptions";
 import {
   FaHandRock,
@@ -20,7 +20,7 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { decryptBet } from "../../server/decryptBet";
+import { decryptBet } from "../../server/sol/decryptBet";
 import BetsByAddress from "../../components/BetsByAddress";
 
 import { Press_Start_2P } from "next/font/google";

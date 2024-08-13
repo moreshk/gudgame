@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { fetchLeaderboard } from "../server/fetchLeaderboard";
+import { fetchLeaderboard } from "../server/sol/fetchLeaderboard";
 import Navbar from "../components/Navbar";
 import { Press_Start_2P } from 'next/font/google';
 import { Switch } from '@headlessui/react';

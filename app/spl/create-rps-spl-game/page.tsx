@@ -8,8 +8,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Select from 'react-select';
 import Navbar from '../../components/Navbar';
-import { createSolanaPotAddress } from '../../server/createPot';
+import { createSolanaPotAddress } from '../../server/sol/createPot';
 import { createRPSSplBet } from '../../server/spl/createRPSSplBet';
+import { tokenData } from '../../tokenData';
 
 import { Press_Start_2P } from 'next/font/google';
 
@@ -48,22 +49,11 @@ export default function CreateRPSBet() {
   const [selectedToken, setSelectedToken] = useState<TokenOption | null>(null);
 
   useEffect(() => {
-    fetch('/spl.csv')
-      .then(response => response.text())
-      .then(text => {
-        const rows = text.split('\n').slice(1); // Skip header
-        const tokens = rows.map(row => {
-          const [token_name, token_symbol, token_contract_address, token_decimals] = row.split(',');
-          return {
-            token_name,
-            token_symbol,
-            token_contract_address,
-            token_decimals: parseInt(token_decimals),
-            token_image: `/tokens/${encodeURIComponent(token_symbol.trim().replace(/"/g, ''))}.png` // Remove quotes and encode
-          };
-        });
-        setSplTokens(tokens);
-      });
+    const tokens = tokenData.map(token => ({
+      ...token,
+      token_image: `/tokens/${encodeURIComponent(token.token_symbol.trim())}.png`
+    }));
+    setSplTokens(tokens);
   }, []);
   
 
@@ -194,7 +184,7 @@ export default function CreateRPSBet() {
       });
 
       if (betResult.success) {
-        router.push(`/rps-spl-game/${betResult.id}`);
+        router.push(`/spl/rps-spl-game/${betResult.id}`);
       } else {
         throw new Error(betResult.error);
       }

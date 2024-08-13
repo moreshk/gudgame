@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { decryptPrivateKey } from '../server/decryptKey';
+import { decryptPrivateKey } from '../server/sol/decryptKey';
 import Navbar from '../components/Navbar';
 
 export default function DecryptTest() {

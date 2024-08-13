@@ -10,9 +10,9 @@ import {
   SystemProgram,
   sendAndConfirmRawTransaction,
 } from "@solana/web3.js";
-import { updateRPSBet } from "../server/updateRPSBets";
+import { updateRPSBet } from "../server/sol/updateRPSBets";
 import Image from "next/image";
-import { getRPSBetById } from "../server/getRPSBetById";
+import { getRPSBetById } from "../server/sol/getRPSBetById";
 
 interface BetOptionsProps {
   betId: number;

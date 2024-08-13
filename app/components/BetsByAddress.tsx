@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getLastResolvedBets } from "../server/getBetsByAddress";
+import { getLastResolvedBets } from "../server/sol/getBetsByAddress";
 import { Press_Start_2P } from "next/font/google";
 import Link from 'next/link';
 
