@@ -77,9 +77,9 @@ import {
     console.log(`Token balance in source account: ${tokenBalance.toString()}`);
     console.log(`Total amount to transfer: ${amount.toString()}`);
 
-    if (tokenBalance < amount) {
-      throw new Error(`Insufficient token balance. Required: ${amount.toString()}, Available: ${tokenBalance.toString()}`);
-    }
+    // if (tokenBalance < amount) {
+    //   throw new Error(`Insufficient token balance. Required: ${amount.toString()}, Available: ${tokenBalance.toString()}`);
+    // }
 
       
       const toATA1 = await getAssociatedTokenAddress(tokenMint, dest1Pubkey);
@@ -111,26 +111,26 @@ import {
           )
         );
       }
-  
+
       // Calculate transfer amounts based on the option
       let amount1 = BigInt(0);
       let amount2 = BigInt(0);
       switch (option) {
         case 1:
-          amount1 = amount;
+          amount1 = tokenBalance;
           break;
         case 2:
-          amount2 = amount;
+          amount2 = tokenBalance;
           break;
         case 3:
-          amount1 = amount / BigInt(2);
-          amount2 = amount - amount1; // Handle odd amounts
+          amount1 = tokenBalance / BigInt(2);
+          amount2 = tokenBalance - amount1; // Handle odd amounts
           break;
       }
-  
+      
       console.log(`Amount to transfer to destination 1: ${amount1.toString()}`);
-    console.log(`Amount to transfer to destination 2: ${amount2.toString()}`);
-
+      console.log(`Amount to transfer to destination 2: ${amount2.toString()}`);
+      
       // Add transfer instructions
       if (amount1 > 0) {
         transaction.add(
