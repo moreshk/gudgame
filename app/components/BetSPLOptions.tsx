@@ -12,7 +12,7 @@ import {
 import { updateRPSBet } from "../server/spl/updateRPSSplBets";
 import Image from "next/image";
 import { getRPSSplBetById } from "../server/spl/getRPSSplBetById";
-import { getTokenInfo } from "../server/sol/getTokenInfo";
+import { getTokenInfo } from "../server/spl/getTokenInfo";
 import {
   createTransferInstruction,
   getAssociatedTokenAddress,
