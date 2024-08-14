@@ -128,28 +128,25 @@ export default function RPSBetDetails() {
           if (result.bet.bet_taker_address && result.bet.taker_bet) {
             // Resolve the bet and get the winner immediately
             const resolveResult = await resolveRPSBet(Number(id));
-            if (
-              resolveResult &&
-              resolveResult.success &&
-              resolveResult.winner
-            ) {
+            if (resolveResult && resolveResult.success && resolveResult.winner) {
               setGameOutcome(resolveResult.winner);
               setIsResolving(false);
               setIsFundsTransferring(true);
-
-              // Continue with the fund transfer and database update in the background
-              const finalResult = await completeRPSBetResolution(
-                Number(id),
-                resolveResult.winner,
-                resolveResult.option!,
-                connection
-              );
-              if (finalResult.success) {
-                const updatedResult = await getRPSSplBetById(Number(id));
-                if (updatedResult.success && updatedResult.bet) {
-                  setBet(updatedResult.bet);
-                }
+  
+              // Update the bet state with the new signature
+              if (resolveResult.signature) {
+                setBet(prevBet => prevBet ? {
+                  ...prevBet,
+                  winnings_disbursement_signature: resolveResult.signature || null
+                } : null);
               }
+  
+              // Fetch the updated bet details
+              const updatedResult = await getRPSSplBetById(Number(id));
+              if (updatedResult.success && updatedResult.bet) {
+                setBet(updatedResult.bet);
+              }
+  
               setIsFundsTransferring(false);
             } else {
               throw new Error(resolveResult?.error || "Failed to resolve bet");
@@ -175,8 +172,8 @@ export default function RPSBetDetails() {
     const winnerAddress = gameOutcome || bet.winner_address;
     if (winnerAddress === "DRAW") return "It's a draw!";
     if (winnerAddress === wallet.publicKey.toBase58())
-      return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
-    return `You lost ${amount.toFixed(2)} SOL 😢`;
+      return `🎉🎉🎉 You won 🎉🎉🎉`;
+    return `😢 You lost 😢`;
   };
 
   const getResultMessage = () => {
@@ -185,8 +182,8 @@ export default function RPSBetDetails() {
     const winnerAddress = gameOutcome || bet.winner_address;
     if (winnerAddress === "DRAW") return "It's a draw!";
     if (winnerAddress === wallet.publicKey.toBase58())
-      return `You won ${(amount * 2).toFixed(2)} SOL! 🎉`;
-    return `You lost ${amount.toFixed(2)} SOL 😢`;
+      return `🎉🎉🎉 You won 🎉🎉🎉`;
+    return `😢 You lost 😢`;
   };
 
   return (

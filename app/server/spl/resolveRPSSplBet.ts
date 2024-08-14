@@ -14,6 +14,7 @@ interface ResolveRPSBetResult {
   error?: string;
   winner?: string;
   option?: 1 | 2 | 3;
+  signature?: string;
 }
 
 
@@ -94,12 +95,13 @@ export async function resolveRPSBet(id: number): Promise<ResolveRPSBetResult> {
     if (!completionResult.success) {
       throw new Error(completionResult.error || "Failed to complete bet resolution");
     }
-
+  
     return {
       success: true,
       message: `Winner determined: ${winnerAddress === "DRAW" ? "Draw" : winnerAddress}`,
       winner: winnerAddress,
-      option: option
+      option: option,
+      signature: completionResult.signature // Add this line
     };
 
   } catch (error) {
@@ -209,6 +211,7 @@ export async function completeRPSBetResolution(id: number, winnerAddress: string
       message: `Game resolved successfully. Winner: ${
         winnerAddress === "DRAW" ? "Draw" : winnerAddress
       }`,
+      signature: transferResult.signature // Add this line
     };
   } catch (error) {
     console.error("Error completing RPS game resolution:", error);
