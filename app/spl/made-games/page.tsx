@@ -8,6 +8,7 @@ import { getRPSSplBetsByMaker } from '../../server/spl/getRPSSplBetsByMaker';
 import { decryptBet } from '../../server/sol/decryptBet';
 import Link from 'next/link';
 import { Press_Start_2P } from 'next/font/google';
+import { getTokenInfo } from '../../server/spl/getTokenInfo';
 
 const pressStart2P = Press_Start_2P({ 
   weight: '400',
@@ -29,8 +30,9 @@ interface RPSSplBet {
 }
 
 interface DecryptedSplBet extends RPSSplBet {
-  decryptedMakerBet: string | null;
-}
+    decryptedMakerBet: string | null;
+    tokenSymbol: string; // Add this line
+  }
 
 export default function MySplRPSBets() {
   const { publicKey } = useWallet();
@@ -48,7 +50,9 @@ export default function MySplRPSBets() {
       if (result.success) {
         const decryptedBets = await Promise.all((result.bets ?? []).map(async (bet) => {
           const decryptedMakerBet = await decryptBet(bet.maker_bet).catch(() => null);
-          return { ...bet, decryptedMakerBet };
+          const tokenInfo = await getTokenInfo(bet.token_contract_address);
+          const tokenSymbol = tokenInfo.success ? tokenInfo.tokenInfo?.token_symbol ?? 'SPL Token' : 'SPL Token';
+          return { ...bet, decryptedMakerBet, tokenSymbol };
         }));
         setMyBets(decryptedBets);
       } else {
@@ -97,8 +101,8 @@ export default function MySplRPSBets() {
             <Link key={bet.id} href={`/spl/rps-spl-game/${bet.id}`}>
               <div className="bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors">
               <p className="text-lg font-semibold mb-2">
-                  {formatTokenAmount(bet.bet_amount, bet.token_decimals)} SPL Tokens
-                </p>
+            {formatTokenAmount(bet.bet_amount, bet.token_decimals)} {bet.tokenSymbol}
+          </p>
                 <p className="text-sm text-gray-400 mb-2">
                   {bet.token_contract_address.slice(0, 4)}...{bet.token_contract_address.slice(-4)}
                 </p>
