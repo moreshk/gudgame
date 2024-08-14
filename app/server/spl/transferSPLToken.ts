@@ -24,8 +24,24 @@ import {
     destinationAddress2: string;
     option: 1 | 2 | 3;
     tokenMint: PublicKey;
-    amount: bigint;
     decimals: number;
+  }
+  
+  async function getConfirmedBalance(connection: Connection, address: PublicKey, maxRetries = 5): Promise<bigint> {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const tokenAccount = await getAccount(connection, address, 'confirmed');
+        const balance = tokenAccount.amount;
+        console.log(`Attempt ${i + 1}: Confirmed token balance in source account: ${balance.toString()}`);
+        return balance;
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log(`Attempt ${i + 1} failed: ${errorMessage}`);
+        if (i === maxRetries - 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+      }
+    }
+    throw new Error(`Failed to get confirmed balance after ${maxRetries} retries`);
   }
   
   export async function transferSPLToken({
@@ -36,10 +52,9 @@ import {
     destinationAddress2,
     option,
     tokenMint,
-    amount,
     decimals,
   }: TransferSPLTokenParams): Promise<{ success: boolean; error?: string; signature?: string }> {
-      try {
+    try {
       console.log("Received private key:", typeof privateKey === 'string' ? privateKey.substring(0, 10) + '...' : 'Non-string type');
       console.log("Private key type:", typeof privateKey);
       console.log("Private key length:", typeof privateKey === 'string' ? privateKey.length : (privateKey as any).length);
@@ -48,17 +63,14 @@ import {
       
       let fromKeypair: Keypair;
       if (typeof privateKey === 'string') {
-        // If it's a string, try base58 decoding first, then hex
         try {
           fromKeypair = Keypair.fromSecretKey(bs58.decode(privateKey));
         } catch (e) {
           fromKeypair = Keypair.fromSecretKey(Buffer.from(privateKey, 'hex'));
         }
       } else if (Buffer.isBuffer(privateKey)) {
-        // If it's a Buffer, use it directly
         fromKeypair = Keypair.fromSecretKey(privateKey);
       } else if (Array.isArray(privateKey)) {
-        // If it's an array, convert to Uint8Array
         fromKeypair = Keypair.fromSecretKey(Uint8Array.from(privateKey));
       } else {
         throw new Error("Unsupported private key format");
@@ -71,17 +83,14 @@ import {
   
       const fromATA = await getAssociatedTokenAddress(tokenMint, fromPubkey);
       
-       // Check token balance
-    const tokenAccount = await getAccount(connection, fromATA);
-    const tokenBalance = tokenAccount.amount;
-    console.log(`Token balance in source account: ${tokenBalance.toString()}`);
-    console.log(`Total amount to transfer: ${amount.toString()}`);
-
-    // if (tokenBalance < amount) {
-    //   throw new Error(`Insufficient token balance. Required: ${amount.toString()}, Available: ${tokenBalance.toString()}`);
-    // }
-
-      
+      // Get confirmed token balance
+      const tokenBalance = await getConfirmedBalance(connection, fromATA);
+      console.log(`Total confirmed balance to transfer: ${tokenBalance.toString()}`);
+  
+      if (tokenBalance === BigInt(0)) {
+        throw new Error(`No tokens available to transfer.`);
+      }
+  
       const toATA1 = await getAssociatedTokenAddress(tokenMint, dest1Pubkey);
       const toATA2 = await getAssociatedTokenAddress(tokenMint, dest2Pubkey);
   
@@ -111,7 +120,7 @@ import {
           )
         );
       }
-
+  
       // Calculate transfer amounts based on the option
       let amount1 = BigInt(0);
       let amount2 = BigInt(0);
@@ -158,7 +167,10 @@ import {
       }
   
       console.log("Transaction built, sending...");
-      const signature = await sendAndConfirmTransaction(connection, transaction, [fromKeypair]);
+      const signature = await sendAndConfirmTransaction(connection, transaction, [fromKeypair], {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed'
+      });
       console.log("Transaction sent successfully, signature:", signature);
   
       return { success: true, signature };

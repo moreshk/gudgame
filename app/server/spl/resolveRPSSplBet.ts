@@ -173,7 +173,7 @@ export async function completeRPSBetResolution(id: number, winnerAddress: string
         destinationAddress2: bet.bet_taker_address,
         option,
         tokenMint: new PublicKey(bet.token_contract_address),
-        amount: BigInt(bet.bet_amount),
+        // amount: BigInt(bet.bet_amount),
         decimals: bet.token_decimals,
       });
 
