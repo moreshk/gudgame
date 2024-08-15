@@ -11,7 +11,7 @@ const WalletMultiButton = dynamic(
   { ssr: false }
 );
 
-const CH2_TOKEN_ADDRESS = '2DMMamkkxQ6zDMBtkFp8KH7FoWzBMBA1CGTYwom4QH6Z';
+const CH2_TOKEN_ADDRESS = 'Eyi4ZC14YyADn3P9tQ7oT5cmq6DCxBTt9ZLszdfX3mh2';
 
 export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -42,7 +42,12 @@ export default function HomePage() {
           );
 
           if (ch2TokenAccount) {
-            setCh2Status('You are on the CH2 list!');
+            const tokenAmount = await connection.getTokenAccountBalance(ch2TokenAccount.pubkey);
+            if (BigInt(tokenAmount.value.amount) > BigInt(0)) {
+              setCh2Status('You are on the CH2 list!');
+            } else {
+              setCh2Status('You are not on the CH2 list.');
+            }
           } else {
             setCh2Status('You are not on the CH2 list.');
           }
@@ -55,6 +60,7 @@ export default function HomePage() {
     checkCh2TokenHolding();
   }, [walletAddress, connection]);
 
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -66,7 +72,7 @@ export default function HomePage() {
           <>
             <h2 className="text-2xl mb-4">Hello {walletAddress}</h2>
             {ch2Status && (
-              <p className={`text-lg ${ch2Status.includes('present') ? 'text-green-500' : 'text-red-500'}`}>
+              <p className={`text-lg ${ch2Status.includes('on the CH2 list') ? 'text-green-500' : 'text-red-500'}`}>
                 {ch2Status}
               </p>
             )}
