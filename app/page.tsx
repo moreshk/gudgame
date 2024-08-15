@@ -1,51 +1,32 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-import { getEarliestOpenRPSBet } from './server/sol/getEarliestOpenBet';
-import RPSBetDetails from './components/RPSBetDetails';
 import Navbar from './components/Navbar';
-import { useRouter } from 'next/navigation';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-export default function EarliestOpenBet() {
-  const [betId, setBetId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+export default function HomePage() {
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const { publicKey } = useWallet();
 
   useEffect(() => {
-    async function fetchEarliestOpenBet() {
-      try {
-        const result = await getEarliestOpenRPSBet();
-        if (result.success && result.betId) {
-          setBetId(result.betId);
-        } else {
-          // setError(result.error || 'No open bets found');
-          // Redirect to create RPS game page if no open bets are found
-          router.push('/create-rps-game');
-        }
-      } catch (err) {
-        setError('Failed to fetch the earliest open bet');
-      } finally {
-        setIsLoading(false);
-      }
+    if (publicKey) {
+      setWalletAddress(publicKey.toString());
+    } else {
+      setWalletAddress(null);
     }
-
-    fetchEarliestOpenBet();
-  }, [router]);
+  }, [publicKey]);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow flex flex-col items-center justify-center p-4">
-        {/* <h1 className="text-3xl font-bold mb-8">Earliest Open Bet</h1> */}
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : betId ? (
-          <RPSBetDetails id={betId} />
+        <div className="mb-8">
+          <WalletMultiButton />
+        </div>
+        {walletAddress ? (
+          <h2 className="text-2xl mb-4">Hello {walletAddress}</h2>
         ) : (
-          <p>No open bets found</p>
+          <p>Connect your wallet to see a welcome message</p>
         )}
       </main>
     </div>

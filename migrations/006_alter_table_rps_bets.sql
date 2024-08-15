@@ -1,2 +1,0 @@
-ALTER TABLE rock_paper_scissors_bets
-DROP CONSTRAINT IF EXISTS rock_paper_scissors_bets_maker_bet_check;
