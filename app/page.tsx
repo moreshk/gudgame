@@ -65,9 +65,9 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow flex flex-col items-center justify-center p-4">
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <WalletMultiButton />
-        </div>
+        </div> */}
         {walletAddress ? (
           <>
             <h2 className="text-2xl mb-4">Hello {walletAddress}</h2>
