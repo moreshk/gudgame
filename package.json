@@ -10,6 +10,7 @@
     "migrate": "node scripts/runMigrations.mjs"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.24.0",
     "@headlessui/react": "^2.1.2",
     "@solana/actions": "^1.6.1",
     "@solana/spl-token": "^0.4.8",

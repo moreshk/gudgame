@@ -1,23 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import dynamic from 'next/dynamic';
-import { PublicKey } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 const WalletMultiButton = dynamic(
   () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletMultiButton),
   { ssr: false }
 );
 
-const CH2_TOKEN_ADDRESS = '2DMMamkkxQ6zDMBtkFp8KH7FoWzBMBA1CGTYwom4QH6Z';
-
 export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [ch2Status, setCh2Status] = useState<string | null>(null);
   const { publicKey } = useWallet();
-  const { connection } = useConnection();
 
   useEffect(() => {
     if (publicKey) {
@@ -29,31 +24,24 @@ export default function HomePage() {
   }, [publicKey]);
 
   useEffect(() => {
-    async function checkCh2TokenHolding() {
+    async function checkCh2Status() {
       if (walletAddress) {
         try {
-          const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-            new PublicKey(walletAddress),
-            { programId: TOKEN_PROGRAM_ID }
-          );
-
-          const ch2TokenAccount = tokenAccounts.value.find(
-            account => account.account.data.parsed.info.mint === CH2_TOKEN_ADDRESS
-          );
-
-          if (ch2TokenAccount) {
-            setCh2Status('You are on the CH2 list!');
-          } else {
-            setCh2Status('You are not on the CH2 list.');
-          }
+          const response = await fetch('/api/check-ch2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ walletAddress }),
+          });
+          const data = await response.json();
+          setCh2Status(data.message);
         } catch (error) {
-          console.error('Error checking CH2 token holding:', error);
-          setCh2Status('Error checking CH2 status');
+          console.error('Error checking ch2 status:', error);
+          setCh2Status('Error checking status');
         }
       }
     }
-    checkCh2TokenHolding();
-  }, [walletAddress, connection]);
+    checkCh2Status();
+  }, [walletAddress]);
 
   return (
     <div className="min-h-screen flex flex-col">
