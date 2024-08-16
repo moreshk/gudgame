@@ -17,6 +17,8 @@ export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [ch2Status, setCh2Status] = useState<string | null>(null);
   const [balance, setBalance] = useState<number>(0);
+  const [earnRate, setEarnRate] = useState<number>(1);
+
   const { publicKey } = useWallet();
   const { connection } = useConnection();
 
@@ -35,6 +37,7 @@ export default function HomePage() {
       const response = await fetch(`/api/balance?wallet=${walletAddress}`);
       const data = await response.json();
       setBalance(data.balance);
+      setEarnRate(data.earnRate);
     }
   }, [walletAddress]);
 
@@ -74,7 +77,7 @@ export default function HomePage() {
 
   const handleTapToEarn = async () => {
     if (walletAddress) {
-      setBalance(prevBalance => prevBalance + 1); // Optimistic update
+      setBalance(prevBalance => prevBalance + earnRate); // Optimistic update using earnRate
       const response = await fetch('/api/update-balance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,7 +85,7 @@ export default function HomePage() {
       });
       const data = await response.json();
       if (!response.ok) {
-        setBalance(prevBalance => prevBalance - 1); // Revert optimistic update if failed
+        setBalance(prevBalance => prevBalance - earnRate); // Revert optimistic update if failed
         console.error('Error updating balance:', data.error);
       }
     }
@@ -102,14 +105,15 @@ export default function HomePage() {
             )}
             {ch2Status && ch2Status.includes('on the CH2 list') && (
               <>
-                <p className="text-xl mt-4">Your Balance: {balance}</p>
-                <button
-                  onClick={handleTapToEarn}
-                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full text-xl"
-                >
-                  Tap to Earn
-                </button>
-              </>
+              <p className="text-xl mt-4">Your Balance: {balance}</p>
+              <p className="text-lg mt-2">Earn Rate: {earnRate}</p>
+              <button
+                onClick={handleTapToEarn}
+                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full text-xl"
+              >
+                Tap to Earn
+              </button>
+            </>
             )}
           </>
         ) : (

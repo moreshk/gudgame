@@ -11,17 +11,20 @@ export async function GET(request: Request) {
 
   try {
     const result = await sql`
-      SELECT balance FROM user_balances WHERE wallet_address = ${wallet}
+      SELECT balance, earn_rate FROM user_balances WHERE wallet_address = ${wallet}
     `;
 
     if (result.rows.length === 0) {
       await sql`
-        INSERT INTO user_balances (wallet_address, balance) VALUES (${wallet}, 0)
+        INSERT INTO user_balances (wallet_address, balance, earn_rate) VALUES (${wallet}, 0, 1)
       `;
-      return NextResponse.json({ balance: 0 });
+      return NextResponse.json({ balance: 0, earnRate: 1 });
     }
 
-    return NextResponse.json({ balance: result.rows[0].balance });
+    return NextResponse.json({ 
+      balance: result.rows[0].balance, 
+      earnRate: result.rows[0].earn_rate 
+    });
   } catch (error) {
     console.error('Error fetching balance:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

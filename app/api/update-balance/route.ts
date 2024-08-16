@@ -10,10 +10,10 @@ export async function POST(request: Request) {
 
   try {
     const result = await sql`
-      INSERT INTO user_balances (wallet_address, balance)
-      VALUES (${walletAddress}, 1)
+      INSERT INTO user_balances (wallet_address, balance, earn_rate)
+      VALUES (${walletAddress}, 1, 1)
       ON CONFLICT (wallet_address)
-      DO UPDATE SET balance = user_balances.balance + 1
+      DO UPDATE SET balance = user_balances.balance + user_balances.earn_rate
       RETURNING balance
     `;
 
