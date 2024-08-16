@@ -111,23 +111,23 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     );
   
     const renderYAxis = () => {
-      const ticks = 5;
-      return (
-        <g>
-          <line x1="0" y1="0" x2="0" y2={height} stroke="black" />
-          {[...Array(ticks)].map((_, index) => {
-            const y = (height / (ticks - 1)) * index;
-            const price = maxPrice - (index * priceRange / (ticks - 1));
-            return (
-              <g key={index} transform={`translate(0, ${y})`}>
-                <line x2="-5" stroke="black" />
-                <text x="-10" y="5" textAnchor="end">{price.toFixed(2)}</text>
-              </g>
-            );
-          })}
-        </g>
-      );
-    };
+        const ticks = 5;
+        return (
+          <g>
+            <line x1="0" y1="0" x2="0" y2={height} stroke="black" />
+            {[...Array(ticks)].map((_, index) => {
+              const price = Math.round(maxPrice - (index * priceRange / (ticks - 1)));
+              const y = scaleY(price);
+              return (
+                <g key={index} transform={`translate(0, ${y})`}>
+                  <line x2="-5" stroke="black" />
+                  <text x="-10" dy="0.32em" textAnchor="end">{price}</text>
+                </g>
+              );
+            })}
+          </g>
+        );
+      };
   
     return (
       <div className="p-4 bg-white rounded-lg shadow-md">
