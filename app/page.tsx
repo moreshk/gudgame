@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { formatAddress } from './utils/formatters';
 const WalletMultiButton = dynamic(
   () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletMultiButton),
   { ssr: false }
@@ -100,13 +100,13 @@ export default function HomePage() {
       <main className="flex-grow flex flex-col items-center justify-center p-4">
         {walletAddress ? (
           <>
-            <h2 className="text-2xl mb-4">Hello {walletAddress}</h2>
+            <h2 className="text-2xl mb-4">Hello {formatAddress(walletAddress)}</h2>
             {ch2Status && (
-              <p className={`text-lg ${ch2Status.includes('on the CH2 list') ? 'text-green-500' : 'text-red-500'}`}>
+              <p className={`text-lg ${ch2Status === 'You are on the CH2 list!' ? 'text-green-500' : 'text-red-500'}`}>
                 {ch2Status}
               </p>
             )}
-            {ch2Status && ch2Status.includes('on the CH2 list') && (
+            {ch2Status === 'You are on the CH2 list!' && (
               <>
                 <p className="text-xl mt-4">Your Balance: {balance}</p>
                 <p className="text-lg mt-2">Earn Rate: {earnRate}</p>
