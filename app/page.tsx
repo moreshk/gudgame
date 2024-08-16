@@ -8,7 +8,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import WalletInfo from './components/WalletInfo';
 import BalanceDisplay from './components/BalanceDisplay';
 import TapToEarnButton from './components/TapToEarnButton';
-
+import { updateBalance } from './server/updateBalance';
 const WalletMultiButton = dynamic(
   () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletMultiButton),
   { ssr: false }
@@ -80,16 +80,13 @@ export default function HomePage() {
 
   const handleTapToEarn = async () => {
     if (walletAddress) {
-      setBalance(prevBalance => prevBalance + earnRate);
-      const response = await fetch('/api/update-balance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
+      try {
+        setBalance(prevBalance => prevBalance + earnRate);
+        const newBalance = await updateBalance(walletAddress);
+        setBalance(newBalance);
+      } catch (error) {
         setBalance(prevBalance => prevBalance - earnRate);
-        console.error('Error updating balance:', data.error);
+        console.error('Error updating balance:', error);
       }
     }
   };
