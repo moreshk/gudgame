@@ -9,17 +9,19 @@ interface CandleData {
 }
 
 const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice = 100 }) => {
+  console.log('Starting price:', startingPrice); // Debug log
+
   const generateCandle = (prevClose: number): CandleData => {
-    const maxChange = prevClose * 0.05; // 5% maximum change
-    const open = prevClose + (Math.random() - 0.5) * 2 * maxChange;
-    const close = prevClose + (Math.random() - 0.5) * 2 * maxChange;
-    const high = Math.max(open, close) + Math.random() * maxChange;
-    const low = Math.min(open, close) - Math.random() * maxChange;
+    const maxChange = prevClose * 0.02; // 2% maximum change
+    const open = prevClose + (Math.random() - 0.5) * maxChange;
+    const close = open + (Math.random() - 0.5) * maxChange;
+    const high = Math.max(open, close) + Math.random() * (maxChange / 2);
+    const low = Math.min(open, close) - Math.random() * (maxChange / 2);
     return { open, close, high, low, time: new Date().toLocaleTimeString() };
   };
 
   const [data, setData] = useState<CandleData[]>(() => {
-    // Generate the first candle immediately
+    // Generate the first candle using the startingPrice
     return [generateCandle(startingPrice)];
   });
   const [currentCandle, setCurrentCandle] = useState<CandleData | null>(null);
@@ -50,7 +52,8 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
           const lastCandle = data[data.length - 1];
           return generateCandle(lastCandle.close);
         }
-        const growth = (Math.random() - 0.5) * 2;
+        const maxGrowth = prevCandle.close * 0.005; // 0.5% maximum growth
+        const growth = (Math.random() - 0.5) * 2 * maxGrowth;
         const newClose = prevCandle.close + growth;
         setCurrentPrice(newClose);
         return {
@@ -64,15 +67,6 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
 
     return () => clearInterval(growthInterval);
   }, [data]);
-
-//   const generateCandle = (prevClose: number): CandleData => {
-//     const maxChange = prevClose * 0.05; // 5% maximum change
-//     const open = prevClose + (Math.random() - 0.5) * 2 * maxChange;
-//     const close = prevClose + (Math.random() - 0.5) * 2 * maxChange;
-//     const high = Math.max(open, close) + Math.random() * maxChange;
-//     const low = Math.min(open, close) - Math.random() * maxChange;
-//     return { open, close, high, low, time: new Date().toLocaleTimeString() };
-//   };
 
   const allCandles = [...data, currentCandle].filter(Boolean) as CandleData[];
 

@@ -105,19 +105,7 @@ export default function CreatePage() {
           <>
             {ch2Status === 'You are on the CH2 list!' ? (
               <div className="p-4 max-w-4xl mx-auto">
-                
-                {/* <div className="mb-6">
-                  <label htmlFor="startingPrice" className="block text-sm font-medium text-gray-700">Starting Price</label>
-                  <input
-                    type="number"
-                    id="startingPrice"
-                    value={startingPrice}
-                    onChange={handleStartingPriceChange}
-                    min="1"
-                    step="0.01"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  />
-                </div> */}
+
 
                 <CandlestickChart startingPrice={balance} />
               </div>
