@@ -5,6 +5,7 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import dynamic from 'next/dynamic';
 import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const WalletMultiButton = dynamic(
   () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletMultiButton),
@@ -18,6 +19,7 @@ export default function HomePage() {
   const [ch2Status, setCh2Status] = useState<string | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [earnRate, setEarnRate] = useState<number>(1);
+  const [earnAnimations, setEarnAnimations] = useState<number[]>([]);
 
   const { publicKey } = useWallet();
   const { connection } = useConnection();
@@ -78,6 +80,7 @@ export default function HomePage() {
   const handleTapToEarn = async () => {
     if (walletAddress) {
       setBalance(prevBalance => prevBalance + earnRate); // Optimistic update using earnRate
+      setEarnAnimations(prev => [...prev, Date.now()]); // Add new animation
       const response = await fetch('/api/update-balance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,15 +108,36 @@ export default function HomePage() {
             )}
             {ch2Status && ch2Status.includes('on the CH2 list') && (
               <>
-              <p className="text-xl mt-4">Your Balance: {balance}</p>
-              <p className="text-lg mt-2">Earn Rate: {earnRate}</p>
-              <button
-                onClick={handleTapToEarn}
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full text-xl"
-              >
-                Tap to Earn
-              </button>
-            </>
+                <p className="text-xl mt-4">Your Balance: {balance}</p>
+                <p className="text-lg mt-2">Earn Rate: {earnRate}</p>
+                <div className="relative mt-16 mb-8">
+                  <button
+                    onClick={handleTapToEarn}
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold w-32 h-32 rounded-full text-xl flex items-center justify-center shadow-lg transform active:scale-95 transition-transform duration-100 ease-in-out"
+                    style={{
+                      boxShadow: '0 6px 0 #9b2c2c',
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    Tap to Earn
+                  </button>
+                  <AnimatePresence>
+                    {earnAnimations.map((id) => (
+                      <motion.div
+                        key={id}
+                        initial={{ opacity: 1, y: 0 }}
+                        animate={{ opacity: 0, y: '-100vh' }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 3, ease: 'easeOut' }}
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl font-bold text-white"
+                        style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}
+                      >
+                        +{earnRate}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </>
             )}
           </>
         ) : (
