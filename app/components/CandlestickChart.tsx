@@ -268,7 +268,7 @@ const CandlestickChart: React.FC<{
       ) : (
         <>
           <h2 className="text-2xl font-bold mb-4 text-white">
-            Price: ${currentPrice.toFixed(2)} | RNG: {randomNumber} | Threshold: {threshold} | Candles: {candleCount}
+            Price: ${Math.round(currentPrice)} | RNG: {randomNumber} | Threshold: {threshold} | Candles: {candleCount}
             {gameOver && <span className="text-red-500 ml-2">GAME OVER!</span>}
           </h2>
           <svg width={chartWidth} height={chartHeight} className="mx-auto">
