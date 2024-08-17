@@ -109,7 +109,7 @@ export default function CreatePage() {
                     <CandlestickChart 
                     startingPrice={balance} 
                     volatility={0.02} 
-                    trend={0}
+                    trend={0.3}
                   />
                 )}
               </div>
