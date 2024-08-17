@@ -10,7 +10,6 @@ interface CandleData {
   time: string;
 }
 
-// const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice = 100 }) => {
 const CandlestickChart: React.FC<{
   startingPrice: number;
   volatility: number;
@@ -20,6 +19,7 @@ const CandlestickChart: React.FC<{
 }> = ({ startingPrice = 100, volatility = 0.02, trend = 0, rng = 1000, walletAddress }) => {
   const [isLaunched, setIsLaunched] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isCashedOut, setIsCashedOut] = useState(false);
   const rocketRef = useRef<HTMLDivElement>(null);
 
   const [data, setData] = useState<CandleData[]>([]);
@@ -44,6 +44,7 @@ const CandlestickChart: React.FC<{
     try {
       const updatedBalance = await updateBalance(walletAddress);
       setCashOutMessage(`Successfully cashed out! New balance: ${updatedBalance}`);
+      setIsCashedOut(true);
     } catch (error) {
       console.error("Error cashing out:", error);
       setCashOutMessage("Failed to cash out. Please try again.");
@@ -70,7 +71,7 @@ const CandlestickChart: React.FC<{
   );
 
   useEffect(() => {
-    if (!isLaunched) return;
+    if (!isLaunched || isCashedOut) return;
 
     const interval = setInterval(() => {
       setData((prevData) => {
@@ -85,10 +86,10 @@ const CandlestickChart: React.FC<{
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isLaunched, startingPrice, generateCandle, rng]);
+  }, [isLaunched, startingPrice, generateCandle, rng, isCashedOut]);
 
   useEffect(() => {
-    if (!isLaunched) return;
+    if (!isLaunched || isCashedOut) return;
 
     const growthInterval = setInterval(() => {
       setCurrentCandle((prevCandle) => {
@@ -96,7 +97,7 @@ const CandlestickChart: React.FC<{
           const lastCandle = data[data.length - 1] || { close: startingPrice };
           return generateCandle(lastCandle.close);
         }
-        const maxGrowth = prevCandle.close * 0.005; // 0.5% maximum growth
+        const maxGrowth = prevCandle.close * 0.005;
         const growth = (Math.random() - 0.5) * 2 * maxGrowth;
         const newClose = prevCandle.close + growth;
         setCurrentPrice(newClose);
@@ -110,7 +111,7 @@ const CandlestickChart: React.FC<{
     }, 100);
 
     return () => clearInterval(growthInterval);
-  }, [data, isLaunched, startingPrice, generateCandle]);
+  }, [data, isLaunched, startingPrice, generateCandle, isCashedOut]);
 
   const allCandles = [...data, currentCandle].filter(Boolean) as CandleData[];
 
@@ -120,7 +121,7 @@ const CandlestickChart: React.FC<{
 
   const scaleY = (price: number) =>
     height - ((price - minPrice) / priceRange) * height;
-  const candleWidth = width / 20; // 20 candles fit in the chart
+  const candleWidth = width / 20;
 
   const renderCandle = (candle: CandleData, index: number) => {
     if (!candle) return null;
@@ -136,14 +137,14 @@ const CandlestickChart: React.FC<{
           y1={scaleY(candle.high)}
           x2={x + candleWidth / 2}
           y2={scaleY(candle.low)}
-          stroke="black"
+          stroke="white"
           strokeWidth="1"
         />
         <rect
           x={x}
           y={y}
           width={candleWidth}
-          height={candleHeight || 1} // Ensure minimum height of 1
+          height={candleHeight || 1}
           fill={candle.open > candle.close ? "red" : "green"}
         />
       </g>
@@ -242,8 +243,9 @@ const CandlestickChart: React.FC<{
             <button
               onClick={handleCashOut}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              disabled={isCashedOut}
             >
-              Cash Out
+              {isCashedOut ? "Cashed Out" : "Cash Out"}
             </button>
             {cashOutMessage && (
               <p className="mt-2 text-white">{cashOutMessage}</p>
