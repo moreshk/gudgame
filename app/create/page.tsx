@@ -106,7 +106,11 @@ export default function CreatePage() {
             {ch2Status === 'You are on the CH2 list!' ? (
               <div className="p-4 max-w-4xl mx-auto">
                 {balance !== null && (
-                  <CandlestickChart startingPrice={balance} />
+                    <CandlestickChart 
+                    startingPrice={balance} 
+                    volatility={0.02} 
+                    trend={0}
+                  />
                 )}
               </div>
             ) : (

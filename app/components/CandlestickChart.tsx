@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 interface CandleData {
   open: number;
@@ -8,8 +8,15 @@ interface CandleData {
   time: string;
 }
 
-const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice = 100 }) => {
-  const [isLaunched, setIsLaunched] = useState(false);
+// const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice = 100 }) => {
+    const CandlestickChart: React.FC<{
+        startingPrice: number;
+        volatility: number;
+        trend: number;
+      }> = ({ startingPrice = 100, volatility = 0.02, trend = 0 }) => {
+        
+  
+    const [isLaunched, setIsLaunched] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const rocketRef = useRef<HTMLDivElement>(null);
 
@@ -23,14 +30,20 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
   const width = chartWidth - margin.left - margin.right;
   const height = chartHeight - margin.top - margin.bottom;
 
-  const generateCandle = (prevClose: number): CandleData => {
-    const maxChange = prevClose * 0.02; // 2% maximum change
-    const open = prevClose + (Math.random() - 0.5) * maxChange;
-    const close = open + (Math.random() - 0.5) * maxChange;
+  const generateCandle = useCallback((prevClose: number): CandleData => {
+    const maxChange = prevClose * volatility;
+    const trendBias = trend * maxChange * 0.5;
+    const randomFactor = Math.random() - 0.5;
+    
+    const change = trendBias + randomFactor * maxChange * (1 + Math.abs(trend));
+    
+    const open = prevClose;
+    const close = open + change;
     const high = Math.max(open, close) + Math.random() * (maxChange / 2);
     const low = Math.min(open, close) - Math.random() * (maxChange / 2);
+    
     return { open, close, high, low, time: new Date().toLocaleTimeString() };
-  };
+  }, [volatility, trend]);
 
   useEffect(() => {
     if (!isLaunched) return;
@@ -38,13 +51,13 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     const interval = setInterval(() => {
       setData(prevData => {
         const newCandle = generateCandle(prevData.length ? prevData[prevData.length - 1].close : startingPrice);
-        return [...prevData.slice(-19), newCandle]; // Keep only the last 20 candles
+        return [...prevData.slice(-19), newCandle];
       });
       setCurrentCandle(null);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isLaunched, startingPrice]);
+  }, [isLaunched, startingPrice, generateCandle]);
 
   useEffect(() => {
     if (!isLaunched) return;
@@ -69,9 +82,10 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     }, 100);
 
     return () => clearInterval(growthInterval);
-  }, [data, isLaunched, startingPrice]);
+  }, [data, isLaunched, startingPrice, generateCandle]);
 
   const allCandles = [...data, currentCandle].filter(Boolean) as CandleData[];
+
 
   const minPrice = Math.min(...allCandles.map(c => c.low));
   const maxPrice = Math.max(...allCandles.map(c => c.high));
