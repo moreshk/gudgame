@@ -110,6 +110,7 @@ export default function CreatePage() {
                     startingPrice={balance} 
                     volatility={0.02} 
                     trend={0.3}
+                    rng={balance} 
                   />
                 )}
               </div>
