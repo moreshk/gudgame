@@ -39,7 +39,7 @@ const CandlestickChart: React.FC<{
   const height = chartHeight - margin.top - margin.bottom;
   const [cashOutMessage, setCashOutMessage] = useState<string | null>(null);
 
-  const handleCashOut = async (price: number) => {
+  const handleCashOut = useCallback(async (price: number) => {
     if (!walletAddress) {
       setCashOutMessage("Please connect your wallet first.");
       return;
@@ -56,7 +56,7 @@ const CandlestickChart: React.FC<{
       setCashOutMessage("Failed to cash out. Please try again.");
       setIsCashedOut(false);
     }
-  };
+  }, [walletAddress]);
 
   const generateCandle = useCallback(
     (prevClose: number, forceGameOver: boolean = false): CandleData => {
@@ -117,7 +117,7 @@ const CandlestickChart: React.FC<{
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isLaunched, startingPrice, generateCandle, rng, isCashedOut, candleCount, threshold, gameOver]);
+  }, [isLaunched, startingPrice, generateCandle, rng, isCashedOut, candleCount, threshold, gameOver, handleCashOut]);
 
   useEffect(() => {
     if (candleCount > prevCandleCountRef.current) {
@@ -268,7 +268,7 @@ const CandlestickChart: React.FC<{
       ) : (
         <>
           <h2 className="text-2xl font-bold mb-4 text-white">
-            Price: ${currentPrice.toFixed(2)} | RNG: {randomNumber} | Threshold: {threshold} | Candles: {candleCount})
+            Price: ${currentPrice.toFixed(2)} | RNG: {randomNumber} | Threshold: {threshold} | Candles: {candleCount}
             {gameOver && <span className="text-red-500 ml-2">GAME OVER!</span>}
           </h2>
           <svg width={chartWidth} height={chartHeight} className="mx-auto">
