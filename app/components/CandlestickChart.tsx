@@ -23,6 +23,7 @@ const CandlestickChart: React.FC<{
   const [currentCandle, setCurrentCandle] = useState<CandleData | null>(null);
   const [currentPrice, setCurrentPrice] = useState(startingPrice);
   const [randomNumber, setRandomNumber] = useState(0);
+  const [threshold, setThreshold] = useState(10);
 
   const chartWidth = 600;
   const chartHeight = 300;
@@ -58,8 +59,8 @@ const CandlestickChart: React.FC<{
           prevData.length ? prevData[prevData.length - 1].close : startingPrice
         );
         setRandomNumber(Math.floor(Math.random() * (rng + 1)));
+        setThreshold((prevThreshold) => prevThreshold + 10);
         return [...prevData.slice(-19), newCandle];
-       
       });
       setCurrentCandle(null);
     }, 5000);
@@ -209,7 +210,7 @@ const CandlestickChart: React.FC<{
       ) : (
         <>
           <h2 className="text-2xl font-bold mb-4 text-white">
-            Live Candlestick Chart (Current Price: ${currentPrice.toFixed(2)} | RNG: {randomNumber})
+            Live Candlestick Chart (Current Price: ${currentPrice.toFixed(2)} | RNG: {randomNumber} | Threshold: {threshold})
           </h2>
           <svg width={chartWidth} height={chartHeight} className="mx-auto">
             <g transform={`translate(${margin.left},${margin.top})`}>
