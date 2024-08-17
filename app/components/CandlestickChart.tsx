@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { updateBalance } from "../server/updateBalance";
+import { cashOut } from '../server/cashOut';
 
 interface CandleData {
   open: number;
@@ -43,21 +44,19 @@ const CandlestickChart: React.FC<{
       setCashOutMessage("Please connect your wallet first.");
       return;
     }
-
-   // Immediately stop the chart
-   setIsCashedOut(true);
-   setCashOutMessage("Processing cash out...");
-
-   try {
-     const updatedBalance = await updateBalance(walletAddress);
-     setCashOutMessage(`Successfully cashed out! New balance: ${updatedBalance}`);
-   } catch (error) {
-     console.error("Error cashing out:", error);
-     setCashOutMessage("Failed to cash out. Please try again.");
-     // If the cash out fails, allow the user to try again
-     setIsCashedOut(false);
-   }
- };
+  
+    setIsCashedOut(true);
+    setCashOutMessage("Processing cash out...");
+  
+    try {
+      const updatedBalance = await cashOut(walletAddress, Number(currentPrice));
+      setCashOutMessage(`Successfully cashed out! New balance: ${updatedBalance.toFixed(2)}`);
+    } catch (error) {
+      console.error("Error cashing out:", error);
+      setCashOutMessage("Failed to cash out. Please try again.");
+      setIsCashedOut(false);
+    }
+  };
 
   const generateCandle = useCallback(
     (prevClose: number): CandleData => {
