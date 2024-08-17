@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
+import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 interface CandleData {
   open: number;
   close: number;
@@ -9,7 +9,19 @@ interface CandleData {
 }
 
 const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice = 100 }) => {
-  console.log('Starting price:', startingPrice); // Debug log
+  const [isLaunched, setIsLaunched] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const rocketRef = useRef<HTMLDivElement>(null);
+
+  const [data, setData] = useState<CandleData[]>([]);
+  const [currentCandle, setCurrentCandle] = useState<CandleData | null>(null);
+  const [currentPrice, setCurrentPrice] = useState(startingPrice);
+
+  const chartWidth = 600;
+  const chartHeight = 300;
+  const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+  const width = chartWidth - margin.left - margin.right;
+  const height = chartHeight - margin.top - margin.bottom;
 
   const generateCandle = (prevClose: number): CandleData => {
     const maxChange = prevClose * 0.02; // 2% maximum change
@@ -20,36 +32,27 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     return { open, close, high, low, time: new Date().toLocaleTimeString() };
   };
 
-  const [data, setData] = useState<CandleData[]>(() => {
-    // Generate the first candle using the startingPrice
-    return [generateCandle(startingPrice)];
-  });
-  const [currentCandle, setCurrentCandle] = useState<CandleData | null>(null);
-  const [currentPrice, setCurrentPrice] = useState(startingPrice);
-
-  const chartWidth = 600;
-  const chartHeight = 300;
-  const margin = { top: 20, right: 30, bottom: 30, left: 40 };
-  const width = chartWidth - margin.left - margin.right;
-  const height = chartHeight - margin.top - margin.bottom;
-
   useEffect(() => {
+    if (!isLaunched) return;
+
     const interval = setInterval(() => {
       setData(prevData => {
-        const newCandle = generateCandle(prevData[prevData.length - 1].close);
+        const newCandle = generateCandle(prevData.length ? prevData[prevData.length - 1].close : startingPrice);
         return [...prevData.slice(-19), newCandle]; // Keep only the last 20 candles
       });
       setCurrentCandle(null);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isLaunched, startingPrice]);
 
   useEffect(() => {
+    if (!isLaunched) return;
+
     const growthInterval = setInterval(() => {
       setCurrentCandle(prevCandle => {
         if (!prevCandle) {
-          const lastCandle = data[data.length - 1];
+          const lastCandle = data[data.length - 1] || { close: startingPrice };
           return generateCandle(lastCandle.close);
         }
         const maxGrowth = prevCandle.close * 0.005; // 0.5% maximum growth
@@ -66,7 +69,7 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     }, 100);
 
     return () => clearInterval(growthInterval);
-  }, [data]);
+  }, [data, isLaunched, startingPrice]);
 
   const allCandles = [...data, currentCandle].filter(Boolean) as CandleData[];
 
@@ -107,11 +110,11 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
 
   const renderXAxis = () => (
     <g transform={`translate(0, ${height})`}>
-      <line x1="0" y1="0" x2={width} y2="0" stroke="black" />
+      <line x1="0" y1="0" x2={width} y2="0" stroke="white" />
       {allCandles.map((_, index) => (
         <g key={index} transform={`translate(${index * candleWidth}, 0)`}>
-          <line y2="5" stroke="black" />
-          <text y="20" textAnchor="middle">{index + 1}</text>
+          <line y2="5" stroke="white" />
+          <text y="20" textAnchor="middle" fill="white">{index + 1}</text>
         </g>
       ))}
     </g>
@@ -121,14 +124,14 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     const ticks = 5;
     return (
       <g>
-        <line x1="0" y1="0" x2="0" y2={height} stroke="black" />
+        <line x1="0" y1="0" x2="0" y2={height} stroke="white" />
         {[...Array(ticks)].map((_, index) => {
           const price = Math.round(maxPrice - (index * priceRange / (ticks - 1)));
           const y = scaleY(price);
           return (
             <g key={index} transform={`translate(0, ${y})`}>
-              <line x2="-5" stroke="black" />
-              <text x="-10" dy="0.32em" textAnchor="end">{price}</text>
+              <line x2="-5" stroke="white" />
+              <text x="-10" dy="0.32em" textAnchor="end" fill="white">{price}</text>
             </g>
           );
         })}
@@ -136,18 +139,52 @@ const CandlestickChart: React.FC<{ startingPrice: number }> = ({ startingPrice =
     );
   };
 
+  const handleLaunch = () => {
+    setIsAnimating(true);
+    if (rocketRef.current) {
+      rocketRef.current.style.transform = 'translateY(-100vh)';
+      rocketRef.current.style.transition = 'transform 1s ease-in';
+    }
+    setTimeout(() => {
+      setIsLaunched(true);
+      setData([generateCandle(startingPrice)]);
+    }, 1000);
+  };
+
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">
-        Live Candlestick Chart (Current Price: ${currentPrice.toFixed(2)})
-      </h2>
-      <svg width={chartWidth} height={chartHeight} className="mx-auto">
-        <g transform={`translate(${margin.left},${margin.top})`}>
-          {allCandles.map(renderCandle)}
-          {renderXAxis()}
-          {renderYAxis()}
-        </g>
-      </svg>
+    <div className="p-4">
+      {!isLaunched ? (
+        <div className="flex justify-center items-center h-[300px]">
+          <div
+            ref={rocketRef}
+            className={`transition-transform duration-1000 ${isAnimating ? 'ease-in' : ''}`}
+          >
+            <button
+              onClick={handleLaunch}
+              className={`w-32 h-32 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 transition-all duration-200 transform hover:scale-105 ${
+                isAnimating ? 'bg-transparent' : 'bg-blue-500 hover:bg-blue-700'
+              }`}
+              aria-label="Launch Meme Coin"
+              disabled={isAnimating}
+            >
+              <Image src="/rocket-logo.png" alt="Rocket" width={80} height={80} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <h2 className="text-2xl font-bold mb-4 text-white">
+            Live Candlestick Chart (Current Price: ${currentPrice.toFixed(2)})
+          </h2>
+          <svg width={chartWidth} height={chartHeight} className="mx-auto">
+            <g transform={`translate(${margin.left},${margin.top})`}>
+              {allCandles.map(renderCandle)}
+              {renderXAxis()}
+              {renderYAxis()}
+            </g>
+          </svg>
+        </>
+      )}
     </div>
   );
 };
