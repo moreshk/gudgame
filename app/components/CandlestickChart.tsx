@@ -41,15 +41,20 @@ const CandlestickChart: React.FC<{
       return;
     }
 
-    try {
-      const updatedBalance = await updateBalance(walletAddress);
-      setCashOutMessage(`Successfully cashed out! New balance: ${updatedBalance}`);
-      setIsCashedOut(true);
-    } catch (error) {
-      console.error("Error cashing out:", error);
-      setCashOutMessage("Failed to cash out. Please try again.");
-    }
-  };
+   // Immediately stop the chart
+   setIsCashedOut(true);
+   setCashOutMessage("Processing cash out...");
+
+   try {
+     const updatedBalance = await updateBalance(walletAddress);
+     setCashOutMessage(`Successfully cashed out! New balance: ${updatedBalance}`);
+   } catch (error) {
+     console.error("Error cashing out:", error);
+     setCashOutMessage("Failed to cash out. Please try again.");
+     // If the cash out fails, allow the user to try again
+     setIsCashedOut(false);
+   }
+ };
 
   const generateCandle = useCallback(
     (prevClose: number): CandleData => {
