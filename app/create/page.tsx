@@ -32,17 +32,17 @@ export default function CreatePage() {
 
   const { publicKey } = useWallet();
   const { connection } = useConnection();
-  const [balance, setBalance] = useState<number>(100);
+  const [balance, setBalance] = useState<number | null>(null);
 
   const fetchBalance = useCallback(async () => {
     if (walletAddress) {
       try {
         const response = await fetch(`/api/balance?wallet=${walletAddress}`);
         const data = await response.json();
-        setBalance(data.balance || 100);
+        setBalance(data.balance || null);
       } catch (error) {
         console.error('Error fetching balance:', error);
-        setBalance(100);
+        setBalance(null);
       }
     }
   }, [walletAddress]);
