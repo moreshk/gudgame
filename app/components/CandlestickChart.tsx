@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { updateBalance } from "../server/updateBalance";
+
 interface CandleData {
   open: number;
   close: number;
@@ -14,7 +16,8 @@ const CandlestickChart: React.FC<{
   volatility: number;
   trend: number;
   rng: number;
-}> = ({ startingPrice = 100, volatility = 0.02, trend = 0, rng = 1000 }) => {
+  walletAddress: string;
+}> = ({ startingPrice = 100, volatility = 0.02, trend = 0, rng = 1000, walletAddress }) => {
   const [isLaunched, setIsLaunched] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const rocketRef = useRef<HTMLDivElement>(null);
@@ -30,6 +33,22 @@ const CandlestickChart: React.FC<{
   const margin = { top: 20, right: 30, bottom: 30, left: 40 };
   const width = chartWidth - margin.left - margin.right;
   const height = chartHeight - margin.top - margin.bottom;
+  const [cashOutMessage, setCashOutMessage] = useState<string | null>(null);
+
+  const handleCashOut = async () => {
+    if (!walletAddress) {
+      setCashOutMessage("Please connect your wallet first.");
+      return;
+    }
+
+    try {
+      const updatedBalance = await updateBalance(walletAddress);
+      setCashOutMessage(`Successfully cashed out! New balance: ${updatedBalance}`);
+    } catch (error) {
+      console.error("Error cashing out:", error);
+      setCashOutMessage("Failed to cash out. Please try again.");
+    }
+  };
 
   const generateCandle = useCallback(
     (prevClose: number): CandleData => {
@@ -219,6 +238,17 @@ const CandlestickChart: React.FC<{
               {renderYAxis()}
             </g>
           </svg>
+          <div className="mt-4 flex flex-col items-center">
+            <button
+              onClick={handleCashOut}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Cash Out
+            </button>
+            {cashOutMessage && (
+              <p className="mt-2 text-white">{cashOutMessage}</p>
+            )}
+          </div>
         </>
       )}
     </div>

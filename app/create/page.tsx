@@ -110,7 +110,8 @@ export default function CreatePage() {
                     startingPrice={balance} 
                     volatility={0.02} 
                     trend={0.3}
-                    rng={balance} 
+                    rng={balance}
+                    walletAddress={walletAddress}  // Add this line 
                   />
                 )}
               </div>
