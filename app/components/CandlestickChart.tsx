@@ -8,6 +8,7 @@ interface CandleData {
   high: number;
   low: number;
   time: string;
+  isGameOver?: boolean;
 }
 
 interface GameState {
@@ -20,6 +21,7 @@ interface GameState {
   randomNumber: number;
   threshold: number;
   candleCount: number;
+  gameOverStartTime: number | null;
 }
 
 const CandlestickChart: React.FC<{
@@ -40,6 +42,7 @@ const CandlestickChart: React.FC<{
     randomNumber: 0,
     threshold: 10,
     candleCount: 0,
+    gameOverStartTime: null,
   });
 
   const [isAnimating, setIsAnimating] = useState(false);
@@ -76,10 +79,11 @@ const CandlestickChart: React.FC<{
       if (forceGameOver) {
         return {
           open: prevClose,
-          close: 0,
+          close: prevClose,  // Start the game over candle at the previous close
           high: prevClose,
-          low: 0,
-          time: new Date().toLocaleTimeString()
+          low: prevClose,
+          time: new Date().toLocaleTimeString(),
+          isGameOver: true
         };
       }
 
@@ -112,16 +116,16 @@ const CandlestickChart: React.FC<{
         // Check for game over condition
         if (newCandleCount > 3 && newRandomNumber < prev.threshold) {
           const gameOverCandle = generateCandle(lastCandle.close, true);
-          handleCashOut(0);
           return {
             ...prev,
             gameOver: true,
             randomNumber: newRandomNumber,
             candleCount: newCandleCount,
             threshold: newThreshold,
-            currentPrice: 0,
+            currentPrice: lastCandle.close,
             data: [...prev.data.slice(-19), gameOverCandle],
-            currentCandle: null
+            currentCandle: gameOverCandle,
+            gameOverStartTime: Date.now(),
           };
         }
 
@@ -133,19 +137,48 @@ const CandlestickChart: React.FC<{
           threshold: newThreshold,
           currentPrice: newCandle.close,
           data: [...prev.data.slice(-19), newCandle],
-          currentCandle: null
+          currentCandle: newCandle
         };
       });
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [gameState.isLaunched, gameState.isCashedOut, gameState.gameOver, startingPrice, generateCandle, rng, handleCashOut]);
+  }, [gameState.isLaunched, gameState.isCashedOut, gameState.gameOver, startingPrice, generateCandle, rng]);
 
   useEffect(() => {
-    if (!gameState.isLaunched || gameState.isCashedOut || gameState.gameOver) return;
+    if (!gameState.isLaunched || gameState.isCashedOut) return;
 
     const growthInterval = setInterval(() => {
       setGameState(prev => {
+        if (prev.gameOver) {
+          const elapsedTime = Date.now() - (prev.gameOverStartTime || Date.now());
+          const duration = 5000; // 5 seconds for the game over animation
+          if (elapsedTime >= duration) {
+            clearInterval(growthInterval);
+            handleCashOut(0);
+            return { 
+              ...prev, 
+              currentPrice: 0,
+              currentCandle: {
+                ...prev.currentCandle!,
+                close: 0,
+                low: 0
+              }
+            };
+          }
+          const progress = elapsedTime / duration;
+          const newPrice = prev.currentCandle!.open * (1 - progress);
+          return { 
+            ...prev, 
+            currentPrice: newPrice,
+            currentCandle: {
+              ...prev.currentCandle!,
+              close: newPrice,
+              low: Math.min(prev.currentCandle!.low, newPrice)
+            }
+          };
+        }
+
         if (!prev.currentCandle) {
           const lastCandle = prev.data[prev.data.length - 1] || { close: startingPrice };
           return { ...prev, currentCandle: generateCandle(lastCandle.close) };
@@ -167,11 +200,11 @@ const CandlestickChart: React.FC<{
     }, 100);
 
     return () => clearInterval(growthInterval);
-  }, [gameState.isLaunched, gameState.isCashedOut, gameState.gameOver, startingPrice, generateCandle]);
+  }, [gameState.isLaunched, gameState.isCashedOut, gameState.gameOver, startingPrice, generateCandle, handleCashOut]);
 
   const allCandles = [...gameState.data, gameState.currentCandle].filter(Boolean) as CandleData[];
 
-  const minPrice = Math.min(...allCandles.map((c) => c.low));
+  const minPrice = Math.min(...allCandles.map((c) => c.low), gameState.currentPrice);
   const maxPrice = Math.max(...allCandles.map((c) => c.high));
   const priceRange = maxPrice - minPrice;
 
@@ -201,7 +234,7 @@ const CandlestickChart: React.FC<{
           y={y}
           width={candleWidth}
           height={candleHeight || 1}
-          fill={candle.open > candle.close ? "red" : "green"}
+          fill={candle.isGameOver ? "red" : (candle.open > candle.close ? "red" : "green")}
         />
       </g>
     );
