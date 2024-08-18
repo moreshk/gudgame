@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { cashOut } from '../server/cashOut';
 
 interface CandleData {
@@ -16,7 +17,8 @@ const CandlestickChart: React.FC<{
   trend: number;
   rng: number;
   walletAddress: string;
-}> = ({ startingPrice = 100, volatility = 0.02, trend = 0, rng = 1000, walletAddress }) => {
+  balance: number;
+}> = ({ startingPrice = 100, volatility = 0.02, trend = 0, rng = 1000, walletAddress, balance }) => {
   const [isLaunched, setIsLaunched] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isCashedOut, setIsCashedOut] = useState(false);

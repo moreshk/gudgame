@@ -7,6 +7,7 @@ import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import dynamic from 'next/dynamic';
 import CandlestickChart from '../components/CandlestickChart';
+import Link from 'next/link';
 
 const WalletMultiButton = dynamic(
   () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletMultiButton),
@@ -15,31 +16,20 @@ const WalletMultiButton = dynamic(
 
 const CH2_TOKEN_ADDRESS = 'Eyi4ZC14YyADn3P9tQ7oT5cmq6DCxBTt9ZLszdfX3mh2';
 
-
-interface CandleData {
-  open: number;
-  close: number;
-  high: number;
-  low: number;
-  time: string;
-}
-
-
 export default function CreatePage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [ch2Status, setCh2Status] = useState<string | null>(null);
-  const [startingPrice, setStartingPrice] = useState(100);
+  const [balance, setBalance] = useState<number | null>(null);
 
   const { publicKey } = useWallet();
   const { connection } = useConnection();
-  const [balance, setBalance] = useState<number | null>(null);
 
   const fetchBalance = useCallback(async () => {
     if (walletAddress) {
       try {
         const response = await fetch(`/api/balance?wallet=${walletAddress}`);
         const data = await response.json();
-        setBalance(data.balance || null);
+        setBalance(data.balance !== undefined ? data.balance : null);
       } catch (error) {
         console.error('Error fetching balance:', error);
         setBalance(null);
@@ -48,8 +38,12 @@ export default function CreatePage() {
   }, [walletAddress]);
 
   useEffect(() => {
-    fetchBalance();
-  }, [fetchBalance]);
+    if (walletAddress) {
+      fetchBalance();
+    } else {
+      setBalance(null);
+    }
+  }, [walletAddress, fetchBalance]);
 
   useEffect(() => {
     if (publicKey) {
@@ -93,10 +87,6 @@ export default function CreatePage() {
     checkCh2TokenHolding();
   }, [checkCh2TokenHolding]);
 
-  const handleStartingPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStartingPrice(Number(e.target.value));
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -105,14 +95,25 @@ export default function CreatePage() {
           <>
             {ch2Status === 'You are on the CH2 list!' ? (
               <div className="p-4 max-w-4xl mx-auto">
-                {balance !== null && (
-                    <CandlestickChart 
+                {balance === 0 ? (
+                  <div className="p-4 text-center">
+                    <h2 className="text-2xl font-bold mb-4 text-white">Insufficient Balance</h2>
+                    <p className="text-white mb-4">You need to earn some balance first to play this game.</p>
+                    <Link href="/" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                      Go to Home Page
+                    </Link>
+                  </div>
+                ) : balance !== null ? (
+                  <CandlestickChart 
                     startingPrice={balance} 
                     volatility={0.02} 
                     trend={0.3}
                     rng={balance}
-                    walletAddress={walletAddress}  // Add this line 
+                    walletAddress={walletAddress}
+                    balance={balance}
                   />
+                ) : (
+                  <p className="text-white">Loading balance...</p>
                 )}
               </div>
             ) : (
