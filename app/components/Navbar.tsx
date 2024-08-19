@@ -49,9 +49,9 @@ const Navbar = () => {
         </button>
       </div>
       {isMenuOpen && (
-        // <div className="absolute top-16 right-0 w-64 bg-gray-800 rounded-md shadow-lg py-1">
-                  <div className="absolute top-16 right-0 w-64 bg-gray-900 rounded-md shadow-lg py-1">
+          <div className="absolute top-16 right-0 w-64 bg-gray-900 rounded-md shadow-lg py-1">
           <Link href="/create-rps-game" className="block py-2 px-4 hover:bg-gray-700">Create</Link>
+          <Link href="/upgrade" className="block py-2 px-4 hover:bg-gray-700">Upgrade</Link>
         </div>
       )}
     </nav>
